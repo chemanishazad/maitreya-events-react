@@ -1,17 +1,18 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll } from "motion/react";
 import { useRef } from "react";
 import { SplitReveal } from "@/components/animation/Reveal";
 import { ArrowIcon, Button, PhoneIcon, WhatsAppIcon } from "@/components/ui/Button";
 import { EnquiryForm } from "@/components/forms/EnquiryForm";
 import { telLink, whatsappLink } from "@/data/site";
+import { useScrub } from "@/lib/motion";
 
 export function FinalCTA() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end end"] });
-  const glowScale = useTransform(scrollYProgress, [0, 1], [0.4, 1.2]);
-  const glowOpacity = useTransform(scrollYProgress, [0, 1], [0, 0.55]);
+  const glowScale = useScrub(scrollYProgress, [0, 1], [0.4, 1.2]);
+  const glowOpacity = useScrub(scrollYProgress, [0, 1], [0, 0.55]);
 
   return (
     <section ref={ref} id="enquire" className="relative overflow-hidden bg-ink py-28 sm:py-40" aria-labelledby="cta-heading">

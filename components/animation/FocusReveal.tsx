@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef, type ElementType } from "react";
+import { useScrub } from "@/lib/motion";
 
 /**
  * Scroll-linked "focus" typography: each word sharpens from blurred and dim to crisp
@@ -53,10 +54,10 @@ function Word({
   range: [number, number];
   accent: boolean;
 }) {
-  const opacity = useTransform(progress, range, [0.12, 1]);
-  const blur = useTransform(progress, range, [10, 0]);
+  const opacity = useScrub(progress, range, [0.12, 1]);
+  const blur = useScrub(progress, range, [10, 0]);
   const filter = useTransform(blur, (b) => `blur(${b}px)`);
-  const y = useTransform(progress, range, [14, 0]);
+  const y = useScrub(progress, range, [14, 0]);
   return (
     <motion.span
       aria-hidden

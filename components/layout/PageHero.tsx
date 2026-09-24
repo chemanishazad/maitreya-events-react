@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll } from "motion/react";
 import { useRef } from "react";
 import { SplitReveal, FadeIn } from "@/components/animation/Reveal";
 import { Breadcrumbs, type Crumb } from "./Breadcrumbs";
+import { useScrub } from "@/lib/motion";
 
 export function PageHero({
   eyebrow,
@@ -27,8 +28,8 @@ export function PageHero({
 }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1.05, 1.2]);
+  const y = useScrub(scrollYProgress, [0, 1], ["0%", "25%"]);
+  const scale = useScrub(scrollYProgress, [0, 1], [1.05, 1.2]);
 
   return (
     <section ref={ref} className="relative overflow-hidden bg-ink pb-16 pt-36 sm:pb-24 sm:pt-44">

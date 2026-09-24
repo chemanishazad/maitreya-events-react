@@ -1,20 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, useScroll } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { img } from "@/data/images";
 import { site } from "@/data/site";
 import { Button, ArrowIcon } from "@/components/ui/Button";
+import { useScrub } from "@/lib/motion";
 
 const slides = [
   { src: img.confettiConcert, label: "Live Events", alt: "Crowd celebrating under falling confetti at a live concert" },
   { src: img.mandap, label: "Weddings", alt: "Decorated wedding mandap stage with floral canopy" },
-  { src: img.auditorium, label: "Corporate", alt: "Audience seated in a large conference auditorium" },
+  { src: img.conferenceDark, label: "Corporate", alt: "Audience facing a lit stage at a corporate event" },
   { src: img.concertWhite, label: "Production", alt: "Stage lighting beams over a concert crowd" },
 ];
 
-const EASE = [0.16, 1, 0.3, 1] as const;
 const SLIDE_MS = 5500;
 
 export function Hero() {
@@ -23,12 +23,12 @@ export function Hero() {
   const [index, setIndex] = useState(0);
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.18]);
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-35%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const radius = useTransform(scrollYProgress, [0, 1], [0, 48]);
-  const inset = useTransform(scrollYProgress, [0, 1], ["inset(0% 0% 0% 0%)", "inset(4% 3% 0% 3%)"]);
+  const bgScale = useScrub(scrollYProgress, [0, 1], [1, 1.18]);
+  const bgY = useScrub(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const contentY = useScrub(scrollYProgress, [0, 1], ["0%", "-35%"]);
+  const contentOpacity = useScrub(scrollYProgress, [0, 0.6], [1, 0]);
+  const radius = useScrub(scrollYProgress, [0, 1], [0, 48]);
+  const inset = useScrub(scrollYProgress, [0, 1], ["inset(0% 0% 0% 0%)", "inset(4% 3% 0% 3%)"]);
 
   useEffect(() => {
     if (reduce) return;
@@ -61,7 +61,7 @@ export function Hero() {
           </AnimatePresence>
         </motion.div>
         {/* Readability overlays */}
-        <div className="absolute inset-0 bg-linear-to-b from-ink/70 via-ink/20 to-ink/90" />
+        <div className="absolute inset-0 bg-linear-to-b from-ink/70 via-ink/35 to-ink/95" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_60%,transparent_20%,rgba(11,10,8,0.65)_85%)]" />
       </motion.div>
 
@@ -69,15 +69,10 @@ export function Hero() {
         style={{ y: contentY, opacity: contentOpacity }}
         className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-28 sm:px-8 sm:pb-32"
       >
-        <motion.p
-          className="eyebrow mb-6 flex items-center gap-3 text-bone/80"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: EASE }}
-        >
+        <p className="anim-fade-up eyebrow mb-6 flex items-center gap-3 text-bone/80">
           <span className="h-px w-10 bg-marigold" />
           {site.descriptor}
-        </motion.p>
+        </p>
 
         <h1 className="display text-[clamp(3.4rem,13.5vw,13rem)]">
           <span className="sr-only">Maitreya Events — We create. You celebrate.</span>
@@ -88,28 +83,21 @@ export function Hero() {
         </h1>
 
         <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <motion.p
-            className="max-w-md text-pretty text-base leading-relaxed text-bone/80 sm:text-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
+          <p
+            className="anim-fade-up max-w-md text-pretty text-base leading-relaxed text-bone/80 sm:text-lg"
+            style={{ "--d": "0.55s" } as React.CSSProperties}
           >
             End-to-end event management, entertainment and production for weddings, celebrations, corporate events,
             cultural programmes and live experiences.
-          </motion.p>
-          <motion.div
-            className="flex flex-wrap gap-3"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.7, ease: EASE }}
-          >
+          </p>
+          <div className="anim-fade-up flex flex-wrap gap-3" style={{ "--d": "0.7s" } as React.CSSProperties}>
             <Button href="/contact" size="lg" trackAs="plan_event_click" icon={<ArrowIcon />}>
               Plan your event
             </Button>
             <Button href="/portfolio" size="lg" variant="ghost" trackAs="explore_events_click">
               Explore our events
             </Button>
-          </motion.div>
+          </div>
         </div>
       </motion.div>
 
@@ -158,15 +146,9 @@ function HeroLine({ children, delay, className }: { children: string; delay: num
   return (
     <span aria-hidden className={`block overflow-hidden pb-[0.06em] ${className ?? ""}`}>
       {children.split("").map((ch, i) => (
-        <motion.span
-          key={i}
-          className="inline-block"
-          initial={{ y: "105%" }}
-          animate={{ y: "0%" }}
-          transition={{ duration: 1, delay: delay + i * 0.028, ease: EASE }}
-        >
+        <span key={i} className="anim-rise" style={{ "--d": `${delay + i * 0.028}s` } as React.CSSProperties}>
           {ch === " " ? " " : ch}
-        </motion.span>
+        </span>
       ))}
     </span>
   );

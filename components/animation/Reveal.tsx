@@ -1,14 +1,19 @@
 "use client";
 
 import { motion, type Variants } from "motion/react";
-import { Fragment, type ElementType, type ReactNode } from "react";
+import { Fragment, type CSSProperties, type ElementType, type ReactNode } from "react";
 import clsx from "clsx";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+const delayVar = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
+
 /**
  * Masked line-by-line / word-by-word rise. Each line is a string; words rise from
  * behind an overflow mask with a small stagger. Text stays in the DOM for SEO/a11y.
+ *
+ * `immediate` (above-the-fold) uses pure CSS so it animates on first paint without
+ * waiting for hydration; otherwise it animates when scrolled into view.
  */
 export function SplitReveal({
   lines,
@@ -28,7 +33,7 @@ export function SplitReveal({
   accentLine?: number;
   delay?: number;
   stagger?: number;
-  /** Animate on mount rather than when scrolled into view */
+  /** Animate on first paint rather than when scrolled into view */
   immediate?: boolean;
 }) {
   const container: Variants = {
@@ -40,42 +45,58 @@ export function SplitReveal({
     show: { y: "0%", rotate: 0, transition: { duration: 1, ease: EASE } },
   };
 
-  const trigger = immediate
-    ? { initial: "hidden", animate: "show" }
-    : { initial: "hidden", whileInView: "show", viewport: { once: true, margin: "0px 0px -12% 0px" } };
+  let n = 0;
+  const renderWord = (content: ReactNode) => {
+    const i = n++;
+    return (
+      <span className="inline-block overflow-hidden pb-[0.08em] -mb-[0.08em] align-top">
+        {immediate ? (
+          <span className="anim-rise" style={delayVar(delay + i * stagger)}>
+            {content}
+          </span>
+        ) : (
+          <motion.span className="inline-block origin-bottom-left" variants={word}>
+            {content}
+          </motion.span>
+        )}
+      </span>
+    );
+  };
+
+  const body = lines.map((line, i) => (
+    <span
+      key={i}
+      className={clsx("block", lineClassName, i === accentLine && "font-serif font-normal italic tracking-[-0.03em] text-marigold")}
+    >
+      {typeof line === "string"
+        ? line.split(" ").map((w, j, all) => (
+            <Fragment key={j}>
+              {renderWord(w)}
+              {j < all.length - 1 && " "}
+            </Fragment>
+          ))
+        : renderWord(line)}
+    </span>
+  ));
+
+  if (immediate) {
+    return (
+      <Tag className={className}>
+        <span className="block">{body}</span>
+      </Tag>
+    );
+  }
 
   return (
     <Tag className={className}>
-      <motion.span className="block" variants={container} {...trigger}>
-        {lines.map((line, i) => (
-          <span
-            key={i}
-            className={clsx(
-              "block",
-              lineClassName,
-              i === accentLine && "font-serif font-normal italic tracking-[-0.03em] text-marigold",
-            )}
-          >
-            {typeof line === "string"
-              ? line.split(" ").map((w, j, all) => (
-                  <Fragment key={j}>
-                    <span className="inline-block overflow-hidden pb-[0.08em] -mb-[0.08em] align-top">
-                      <motion.span className="inline-block origin-bottom-left" variants={word}>
-                        {w}
-                      </motion.span>
-                    </span>
-                    {j < all.length - 1 && " "}
-                  </Fragment>
-                ))
-              : (
-                  <span className="inline-block overflow-hidden pb-[0.08em] -mb-[0.08em] align-top">
-                    <motion.span className="inline-block origin-bottom-left" variants={word}>
-                      {line}
-                    </motion.span>
-                  </span>
-                )}
-          </span>
-        ))}
+      <motion.span
+        className="block"
+        variants={container}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "0px 0px -12% 0px" }}
+      >
+        {body}
       </motion.span>
     </Tag>
   );
@@ -94,18 +115,25 @@ export function FadeIn({
   delay?: number;
   y?: number;
   as?: "div" | "p" | "li" | "section" | "span";
+  /** Animate on first paint (pure CSS) rather than when scrolled into view */
   immediate?: boolean;
 }) {
+  if (immediate) {
+    const Tag = as;
+    return (
+      <Tag className={clsx("anim-fade-up", className)} style={delayVar(delay)}>
+        {children}
+      </Tag>
+    );
+  }
   const Comp = motion[as];
-  const props = immediate
-    ? { animate: { opacity: 1, y: 0 } }
-    : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "0px 0px -10% 0px" } };
   return (
     <Comp
       className={className}
       initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
       transition={{ duration: 0.9, delay, ease: EASE }}
-      {...props}
     >
       {children}
     </Comp>

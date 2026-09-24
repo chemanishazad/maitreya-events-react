@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll } from "motion/react";
 import { useRef } from "react";
 import { FocusReveal } from "@/components/animation/FocusReveal";
 import { FadeIn } from "@/components/animation/Reveal";
 import { VelocityMarquee } from "@/components/animation/Marquee";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { img } from "@/data/images";
+import { useScrub } from "@/lib/motion";
 
 const flow = ["Concept", "Planning", "Design", "Production", "Execution", "Celebration"];
 const marqueeWords = ["Weddings", "Corporate", "Cultural", "Concerts", "Birthdays", "Culturals", "Launches", "Festivals"];
@@ -15,9 +16,9 @@ const marqueeWords = ["Weddings", "Corporate", "Cultural", "Concerts", "Birthday
 export function BrandStatement() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const yA = useTransform(scrollYProgress, [0, 1], ["20%", "-30%"]);
-  const yB = useTransform(scrollYProgress, [0, 1], ["45%", "-45%"]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [-6, 4]);
+  const yA = useScrub(scrollYProgress, [0, 1], ["20%", "-30%"]);
+  const yB = useScrub(scrollYProgress, [0, 1], ["45%", "-45%"]);
+  const rotate = useScrub(scrollYProgress, [0, 1], [-6, 4]);
 
   return (
     <section ref={ref} className="relative overflow-hidden bg-ink pb-24 pt-28 sm:pb-36 sm:pt-40" aria-labelledby="brand-heading">
@@ -32,19 +33,19 @@ export function BrandStatement() {
             as="p"
             text="ONE TEAM. EVERY KIND OF EVENT."
             accentWords={["EVERY"]}
-            className="display relative z-10 max-w-[14ch] text-[clamp(3rem,10.5vw,11rem)]"
+            className="display relative z-10 max-w-[9.5ch] text-[clamp(3rem,10vw,10.5rem)]"
           />
 
           {/* Parallax photographs */}
           <motion.div
             style={{ y: yA, rotate }}
-            className="absolute right-[4%] top-[-6%] hidden aspect-[3/4] w-[22vw] max-w-[340px] overflow-hidden rounded-2xl md:block"
+            className="absolute right-0 top-[2%] hidden aspect-[3/4] w-[24vw] max-w-[380px] overflow-hidden rounded-2xl md:block"
           >
             <Image src={img.weddingCelebration} alt="" fill sizes="22vw" className="object-cover" />
           </motion.div>
           <motion.div
             style={{ y: yB }}
-            className="absolute bottom-[-20%] right-[24%] hidden aspect-square w-[15vw] max-w-[240px] overflow-hidden rounded-2xl md:block"
+            className="absolute bottom-[-8%] right-[22vw] hidden aspect-square w-[14vw] max-w-[220px] overflow-hidden rounded-2xl ring-8 ring-ink md:block xl:right-[27%]"
           >
             <Image src={img.stagePinkBlue} alt="" fill sizes="15vw" className="object-cover" />
           </motion.div>

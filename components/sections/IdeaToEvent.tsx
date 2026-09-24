@@ -93,25 +93,33 @@ export function IdeaToEvent() {
 
           {/* Stage image */}
           <div className="relative order-1 min-h-[34vh] overflow-hidden rounded-[2rem] lg:order-2 lg:col-span-7">
-            <AnimatePresence initial={false}>
+            {/* All stage images stay mounted (so they preload); each wipes up when reached
+                and back down when scrolling up past it. */}
+            {processSteps.map((s, i) => (
               <motion.div
-                key={active}
+                key={s.title}
                 className="absolute inset-0"
-                initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
-                animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
-                exit={{ opacity: 1 }}
+                initial={false}
+                animate={{ clipPath: i <= active ? "inset(0% 0% 0% 0%)" : "inset(100% 0% 0% 0%)" }}
                 transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
+                aria-hidden={i !== active}
               >
                 <motion.div
                   className="absolute inset-0"
-                  initial={{ scale: 1.3 }}
-                  animate={{ scale: 1 }}
+                  initial={false}
+                  animate={{ scale: i === active ? 1 : 1.25 }}
                   transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <Image src={step.image} alt={`${step.title} stage`} fill sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover" />
+                  <Image
+                    src={s.image}
+                    alt={i === active ? `${s.title} stage` : ""}
+                    fill
+                    sizes="(min-width: 1024px) 58vw, 100vw"
+                    className="object-cover"
+                  />
                 </motion.div>
               </motion.div>
-            </AnimatePresence>
+            ))}
             <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-ink/50 to-transparent" />
             <p className="display absolute bottom-5 left-6 hidden text-[clamp(3rem,6vw,6.5rem)] text-bone lg:block">
               <AnimatePresence mode="wait">

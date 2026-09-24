@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "motion/react";
+import { motion, useMotionValueEvent, useScroll, type MotionValue } from "motion/react";
 import { useRef, useState } from "react";
 import clsx from "clsx";
 import { filmFrames } from "@/data/content";
 import { usePrefersReducedMotion } from "@/lib/hooks";
+import { useScrub } from "@/lib/motion";
 
 /**
  * Signature scroll film: scroll scrubs through the life of an event — venue → celebration —
@@ -23,15 +24,15 @@ function PinnedFilm() {
   const [active, setActive] = useState(0);
 
   // 0 → 0.08: window expands to full-bleed · 0.08 → 0.85: frames · 0.85 → 1: wordmark
-  const clip = useTransform(scrollYProgress, [0, 0.08], ["inset(14% 18% 14% 18% round 28px)", "inset(0% 0% 0% 0% round 0px)"]);
-  const film = useTransform(scrollYProgress, [0.08, 0.85], [0, 1], { clamp: true });
-  const zoom = useTransform(scrollYProgress, [0, 1], [1.25, 1]);
-  const statementOpacity = useTransform(scrollYProgress, [0.3, 0.38, 0.55, 0.62], [0, 1, 1, 0]);
-  const statementScale = useTransform(scrollYProgress, [0.3, 0.62], [0.92, 1.06]);
-  const finalOpacity = useTransform(scrollYProgress, [0.86, 0.93], [0, 1]);
-  const finalY = useTransform(scrollYProgress, [0.86, 0.95], ["30%", "0%"]);
-  const darken = useTransform(scrollYProgress, [0.84, 0.94], [0.25, 0.8]);
-  const introOpacity = useTransform(scrollYProgress, [0, 0.06], [1, 0]);
+  const clip = useScrub(scrollYProgress, [0, 0.08], ["inset(14% 18% 14% 18% round 28px)", "inset(0% 0% 0% 0% round 0px)"]);
+  const film = useScrub(scrollYProgress, [0.08, 0.85], [0, 1]);
+  const zoom = useScrub(scrollYProgress, [0, 1], [1.25, 1]);
+  const statementOpacity = useScrub(scrollYProgress, [0.3, 0.38, 0.55, 0.62], [0, 1, 1, 0]);
+  const statementScale = useScrub(scrollYProgress, [0.3, 0.62], [0.92, 1.06]);
+  const finalOpacity = useScrub(scrollYProgress, [0.86, 0.93], [0, 1]);
+  const finalY = useScrub(scrollYProgress, [0.86, 0.95], ["30%", "0%"]);
+  const darken = useScrub(scrollYProgress, [0.84, 0.94], [0.25, 0.8]);
+  const introOpacity = useScrub(scrollYProgress, [0, 0.06], [1, 0]);
 
   useMotionValueEvent(film, "change", (v) => {
     setActive(Math.min(filmFrames.length - 1, Math.floor(v * filmFrames.length)));
@@ -125,8 +126,8 @@ function Frame({
   const end = (index + 1) / total;
   const fade = 0.35 / total;
   // Later frames stack on top and fade in over the previous one, so there is no dip to black.
-  const opacity = useTransform(progress, index === 0 ? [0, 1] : [start - fade, start], index === 0 ? [1, 1] : [0, 1]);
-  const scale = useTransform(progress, [start - fade, end], [1.12, 1]);
+  const opacity = useScrub(progress, index === 0 ? [0, 1] : [start - fade, start], index === 0 ? [1, 1] : [0, 1]);
+  const scale = useScrub(progress, [start - fade, end], [1.12, 1]);
   return (
     <motion.div className="absolute inset-0" style={{ opacity, scale }}>
       <Image src={src} alt={`${label} stage of an event`} fill sizes="100vw" className="object-cover" loading={index < 2 ? "eager" : "lazy"} />

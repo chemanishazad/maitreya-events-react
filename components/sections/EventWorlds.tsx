@@ -62,13 +62,13 @@ export function EventWorlds() {
                   sizes="(min-width: 1024px) 50vw, 10vw"
                   className={clsx(
                     "object-cover transition-all duration-[1200ms] ease-expo",
-                    isActive ? "scale-100 grayscale-0" : "scale-125 grayscale-[70%]",
+                    isActive ? "scale-100 grayscale-0" : "scale-125 grayscale-[35%]",
                   )}
                 />
                 <div
                   className={clsx(
                     "absolute inset-0 transition-colors duration-700",
-                    isActive ? "bg-linear-to-t from-ink/90 via-ink/20 to-transparent" : "bg-ink/60",
+                    isActive ? "bg-linear-to-t from-ink/90 via-ink/20 to-transparent" : "bg-ink/40 group-hover:bg-ink/20",
                   )}
                 />
 

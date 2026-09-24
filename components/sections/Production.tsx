@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { productionCapabilities } from "@/data/content";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { useIsDesktop, usePrefersReducedMotion } from "@/lib/hooks";
 import { Button, ArrowIcon } from "@/components/ui/Button";
+import { useScrub } from "@/lib/motion";
 
 /**
  * "Built for the moment" — production capabilities. On desktop the section pins and the
@@ -81,8 +82,8 @@ function PinnedTrack() {
   }, []);
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
-  const bar = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const x = useScrub(scrollYProgress, [0, 1], [0, -distance]);
+  const bar = useScrub(scrollYProgress, [0, 1], [0, 1]);
 
   return (
     <section
