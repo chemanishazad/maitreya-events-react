@@ -7,11 +7,10 @@ export const site = {
   description:
     "End-to-end event management, entertainment and production for weddings, celebrations, corporate events, cultural programmes and live experiences in Chennai and across Tamil Nadu.",
 
-  // TODO(content): replace with the real business contact details before launch.
-  phoneDisplay: "+91 90000 00000",
-  phone: "+919000000000",
-  whatsapp: "919000000000",
-  email: "hello@maitreyaevents.com",
+  phoneDisplay: "+91 87781 45196",
+  phone: "+918778145196",
+  whatsapp: "918778145196",
+  email: "maitreyaevents@gmail.com",
   address: {
     locality: "Chennai",
     region: "Tamil Nadu",

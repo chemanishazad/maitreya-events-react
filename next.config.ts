@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle (.next/standalone) — what CI ships to the server
+  output: "standalone",
   images: {
     formats: ["image/avif", "image/webp"],
     qualities: [60, 75, 85],

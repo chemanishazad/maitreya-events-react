@@ -10,6 +10,7 @@ import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { WhatsAppFab } from "@/components/layout/WhatsAppFab";
 import { RouteTransitionProvider } from "@/components/layout/RouteTransition";
 import { JsonLd, organizationSchema, websiteSchema } from "@/lib/seo";
+import { isIndexable } from "@/lib/env";
 
 const sans = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin"], display: "swap" });
 const serif = Instrument_Serif({
@@ -51,7 +52,7 @@ export const metadata: Metadata = {
     title: `${site.name} — ${site.tagline}`,
     description: site.description,
   },
-  robots: { index: true, follow: true },
+  robots: isIndexable ? { index: true, follow: true } : { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
