@@ -59,9 +59,10 @@ jobs:
     environment:
       name: production
       url: https://maitreyaevents.com
+    # Same secret names/values as the ayurvibe_website repo (same server)
     env:
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_HOST: ${{ secrets.HOST }}
+      SSH_USER: ${{ secrets.USER }}
       SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
     steps:
       - uses: actions/checkout@v7
@@ -74,10 +75,10 @@ jobs:
 
       - name: Configure SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
-          test -n "$SSH_HOST" -a -n "$SSH_USER" -a -n "$SSH_PRIVATE_KEY" || { echo "::error::Missing SSH_HOST / SSH_USER / SSH_PRIVATE_KEY secrets"; exit 1; }
+          test -n "$SSH_HOST" -a -n "$SSH_USER" -a -n "$SSH_PRIVATE_KEY" || { echo "::error::Missing HOST / USER / KEY secrets (same values as the ayurvibe_website repo)"; exit 1; }
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
