@@ -20,7 +20,7 @@ jobs:
     # Must match the server CPU (Oracle Ampere = arm64). Override with the BUILD_RUNNER repo variable.
     runs-on: ${{ vars.BUILD_RUNNER || 'ubuntu-24.04-arm' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -64,7 +64,7 @@ jobs:
       SSH_USER: ${{ secrets.SSH_USER }}
       SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: deploy
 
