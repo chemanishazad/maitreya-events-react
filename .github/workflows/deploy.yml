@@ -1,24 +1,16 @@
 name: Deploy
 
-# Every push to `master` builds and deploys https://maitreyaevents.com.
-# "Run workflow" in the Actions tab redeploys the latest master manually.
+# Push to master → build → upload to the server → PM2 reload (auto-rollback if unhealthy)
 on:
   push:
     branches: [master]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
+concurrency: deploy
 
 jobs:
-  build:
-    name: Check & build
-    # Must match the server CPU (Oracle Ampere = arm64). Override with the BUILD_RUNNER repo variable.
-    runs-on: ${{ vars.BUILD_RUNNER || 'ubuntu-24.04-arm' }}
+  deploy:
+    runs-on: ubuntu-24.04-arm # same CPU as the Oracle server
     steps:
       - uses: actions/checkout@v7
 
@@ -27,105 +19,26 @@ jobs:
           node-version: 24
           cache: npm
 
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-
-      - name: Write build env
-        # Same contents as your local .env — gives the build any NEXT_PUBLIC_* values
-        env:
-          ENV_FILE: ${{ secrets.ENV_FILE }}
-        run: printf '%s\n' "$ENV_FILE" > .env.production
-
       - name: Build
-        run: npm run build
-        env:
-          SITE_ENV: production
-          NEXT_TELEMETRY_DISABLED: "1"
-
-      - name: Package release
-        run: bash deploy/package.sh "$GITHUB_SHA" release.tgz
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: release
-          path: release.tgz
-          retention-days: 7
-
-  deploy:
-    name: Deploy to server
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://maitreyaevents.com
-    # Same secret names/values as the ayurvibe_website repo (same server)
-    env:
-      SSH_HOST: ${{ secrets.HOST }}
-      SSH_USER: ${{ secrets.USER }}
-      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          sparse-checkout: deploy
-
-      - uses: actions/download-artifact@v8
-        with:
-          name: release
-
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.KEY }}
-          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-        run: |
-          test -n "$SSH_HOST" -a -n "$SSH_USER" -a -n "$SSH_PRIVATE_KEY" || { echo "::error::Missing HOST / USER / KEY secrets (same values as the ayurvibe_website repo)"; exit 1; }
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          if [ -n "$SSH_KNOWN_HOSTS" ]; then
-            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            echo "::warning::SSH_KNOWN_HOSTS not set — trusting the host key on first use"
-            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
-          fi
-          cat > ~/.ssh/config <<EOF
-          Host target
-            HostName $SSH_HOST
-            User $SSH_USER
-            Port $SSH_PORT
-            IdentityFile ~/.ssh/deploy_key
-            IdentitiesOnly yes
-            ServerAliveInterval 20
-          EOF
-
-      - name: Upload release, env and deploy script
         env:
           ENV_FILE: ${{ secrets.ENV_FILE }}
         run: |
-          umask 077
+          printf '%s\n' "$ENV_FILE" > .env.production
+          npm ci
+          npm run lint
+          npm run build
+          bash deploy/package.sh "$GITHUB_SHA" release.tgz
+
+      - name: Deploy
+        env:
+          KEY: ${{ secrets.KEY }}
+          HOST: ${{ secrets.HOST }}
+          USER: ${{ secrets.USER }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          mkdir -p ~/.ssh && printf '%s\n' "$KEY" > ~/.ssh/key && chmod 600 ~/.ssh/key
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
           printf '%s\n' "$ENV_FILE" > server.env
-          scp -q release.tgz target:/tmp/maitreya-$GITHUB_SHA.tgz
-          scp -q server.env target:/tmp/maitreya-$GITHUB_SHA.env
-          scp -q deploy/remote-deploy.sh target:/tmp/maitreya-deploy-$GITHUB_SHA.sh
-          rm -f server.env
-
-      - name: Activate release (auto-rollback on failure)
-        run: |
-          ssh target "bash -lc 'bash /tmp/maitreya-deploy-$GITHUB_SHA.sh $GITHUB_SHA /tmp/maitreya-$GITHUB_SHA.tgz /tmp/maitreya-$GITHUB_SHA.env; rc=\$?; rm -f /tmp/maitreya-deploy-$GITHUB_SHA.sh /tmp/maitreya-$GITHUB_SHA.env; exit \$rc'"
-
-      - name: Public health check
-        # Informational until DNS + SSL point at the server
-        continue-on-error: true
-        run: |
-          for i in 1 2 3 4 5; do
-            if body=$(curl -fsS --max-time 10 https://maitreyaevents.com/api/health) && echo "$body" | grep -q '"ok":true'; then
-              echo "$body"; echo "✅ https://maitreyaevents.com is live" >> "$GITHUB_STEP_SUMMARY"; exit 0
-            fi
-            sleep 5
-          done
-          echo "::warning::https://maitreyaevents.com not reachable yet (DNS/SSL/nginx?)"
-          exit 1
-
-      - name: Clean up key
-        if: always()
-        run: rm -f ~/.ssh/deploy_key
+          scp -i ~/.ssh/key release.tgz server.env deploy/remote-deploy.sh "$USER@$HOST:/tmp/"
+          ssh -i ~/.ssh/key "$USER@$HOST" "bash -lc 'bash /tmp/remote-deploy.sh $GITHUB_SHA /tmp/release.tgz /tmp/server.env'"
+          rm -f ~/.ssh/key server.env
