@@ -68,7 +68,7 @@ jobs:
         with:
           sparse-checkout: deploy
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: release
 
