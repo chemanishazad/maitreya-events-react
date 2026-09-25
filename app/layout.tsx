@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Instrument_Serif, Inter_Tight } from "next/font/google";
+import { Bodoni_Moda, Geist_Mono, Inter_Tight } from "next/font/google";
 import Script from "next/script";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -13,11 +13,13 @@ import { JsonLd, organizationSchema, websiteSchema } from "@/lib/seo";
 import { isIndexable } from "@/lib/env";
 
 const sans = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin"], display: "swap" });
-const serif = Instrument_Serif({
-  variable: "--font-instrument-serif",
+// High-contrast Didone for display type (caps, with italic accents)
+const serif = Bodoni_Moda({
+  variable: "--font-display-serif",
   subsets: ["latin"],
-  weight: "400",
+  weight: "variable",
   style: ["normal", "italic"],
+  axes: ["opsz"],
   display: "swap",
 });
 const mono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"], display: "swap" });

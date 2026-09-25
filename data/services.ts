@@ -107,7 +107,7 @@ export const services: Service[] = [
       "From festival celebrations and classical programmes to community gatherings, we manage artists, stage, sound, lighting and audience experience.",
     ],
     image: img.holi,
-    gallery: [img.holi, img.holiColour, img.festiveDecor, img.fireworks, img.stageBeams, img.crowdNight],
+    gallery: [img.holi, img.holiColour, img.sparklers, img.fireworks, img.stageBeams, img.crowdNight],
     includes: [
       "Festival and programme planning",
       "Cultural artist coordination",
@@ -231,7 +231,7 @@ export const services: Service[] = [
       "We produce exhibitions, expos, festive celebrations, ticketed shows and brand activations for public audiences.",
     ],
     image: img.fireworks,
-    gallery: [img.fireworks, img.festivalPhones, img.crowdNight, img.festiveDecor, img.concertCrowd, img.gathering],
+    gallery: [img.fireworks, img.festivalPhones, img.crowdNight, img.sparklers, img.concertCrowd, img.gathering],
     includes: [
       "Event concept and site planning",
       "Registration and entry management",

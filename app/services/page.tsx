@@ -35,7 +35,7 @@ export default function ServicesPage() {
                 className="group grid items-center gap-6 border-t border-bone/10 py-8 transition-colors md:grid-cols-12 md:py-10"
               >
                 <span className="eyebrow text-muted md:col-span-1">{String(i + 1).padStart(2, "0")}</span>
-                <h2 className="display text-[clamp(2.4rem,5.5vw,5.5rem)] transition-all duration-700 ease-expo group-hover:translate-x-3 group-hover:text-marigold md:col-span-5">
+                <h2 className="display text-[clamp(2rem,4.2vw,4.4rem)] transition-all duration-700 ease-expo group-hover:translate-x-3 group-hover:text-marigold md:col-span-5">
                   {s.title}
                 </h2>
                 <p className="text-pretty text-bone/70 md:col-span-3">{s.blurb}</p>

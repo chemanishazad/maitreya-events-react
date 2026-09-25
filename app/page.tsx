@@ -9,6 +9,9 @@ import { Entertainment } from "@/components/sections/Entertainment";
 import { Upcoming } from "@/components/sections/Upcoming";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { FinalCTA } from "@/components/sections/FinalCTA";
+import { Moments } from "@/components/sections/Moments";
+import { WhyStack } from "@/components/sections/WhyStack";
+import { HomeFaq } from "@/components/sections/HomeFaq";
 
 export default function Home() {
   return (
@@ -19,10 +22,13 @@ export default function Home() {
       <IdeaToEvent />
       <ScrollFilm />
       <SelectedEvents />
+      <Moments />
       <Production />
       <Entertainment />
+      <WhyStack />
       <Upcoming />
       <Testimonials />
+      <HomeFaq />
       <FinalCTA />
     </>
   );

@@ -56,7 +56,7 @@ function Panel({ item, index }: { item: (typeof productionCapabilities)[number];
       <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/30 to-transparent" />
       <span className="display absolute left-6 top-5 text-7xl text-bone/15">{String(index + 1).padStart(2, "0")}</span>
       <div className="absolute inset-x-0 bottom-0 p-7">
-        <h3 className="display text-4xl sm:text-5xl">{item.title}</h3>
+        <h3 className="display text-[clamp(1.9rem,2.7vw,2.7rem)]">{item.title}</h3>
         <p className="mt-3 max-w-xs text-sm text-bone/75">{item.body}</p>
       </div>
     </article>

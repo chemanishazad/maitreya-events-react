@@ -89,7 +89,7 @@ export function Footer() {
         {word.split("").map((ch, i) => (
           <motion.span
             key={i}
-            className="display inline-block bg-linear-to-b from-bone to-bone/10 bg-clip-text text-[19.5vw] text-transparent"
+            className="display inline-block bg-linear-to-b from-bone to-bone/10 bg-clip-text text-[15.5vw] text-transparent"
             initial={{ y: "70%", opacity: 0 }}
             whileInView={{ y: "0%", opacity: 1 }}
             viewport={{ once: true, margin: "0px 0px -5% 0px" }}

@@ -3,6 +3,7 @@
 import {
   motion,
   useAnimationFrame,
+  useInView,
   useMotionValue,
   useReducedMotion,
   useScroll,
@@ -20,11 +21,17 @@ export function VelocityMarquee({
   children,
   baseVelocity = -2.5,
   className,
+  skew = false,
 }: {
   children: ReactNode;
   baseVelocity?: number;
   className?: string;
+  /** Lean the row with scroll speed */
+  skew?: boolean;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  // Only animate while on screen
+  const inView = useInView(ref, { margin: "200px 0px" });
   const reduce = useReducedMotion();
   const baseX = useMotionValue(0);
   const { scrollY } = useScroll();
@@ -33,9 +40,10 @@ export function VelocityMarquee({
   const velocityFactor = useTransform(smoothVelocity, [-1000, 0, 1000], [-4, 0, 4], { clamp: false });
   const x = useTransform(baseX, (v) => `${wrap(-25, -50, v)}%`);
   const direction = useRef(1);
+  const skewX = useTransform(smoothVelocity, (v) => (skew ? `${Math.max(-10, Math.min(10, -v / 180))}deg` : "0deg"));
 
   useAnimationFrame((_, delta) => {
-    if (reduce) return;
+    if (reduce || !inView) return;
     let moveBy = direction.current * baseVelocity * (delta / 1000);
     const vf = velocityFactor.get();
     if (vf < 0) direction.current = -1;
@@ -45,8 +53,8 @@ export function VelocityMarquee({
   });
 
   return (
-    <div className={`overflow-hidden whitespace-nowrap ${className ?? ""}`}>
-      <motion.div className="flex w-max flex-nowrap" style={{ x }}>
+    <div ref={ref} className={`overflow-hidden whitespace-nowrap ${className ?? ""}`}>
+      <motion.div className="flex w-max flex-nowrap" style={{ x, skewX }}>
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="flex shrink-0 items-center" aria-hidden={i > 0}>
             {children}

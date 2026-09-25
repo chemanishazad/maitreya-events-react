@@ -6,7 +6,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { nav, site, telLink, whatsappLink } from "@/data/site";
-import { Logo } from "./Logo";
+import { Logo, LogoMark } from "./Logo";
 import { Button, ArrowIcon } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
 
@@ -47,48 +47,38 @@ export function Header() {
       >
         <div
           className={clsx(
-            "mx-auto flex h-16 max-w-[1600px] items-center justify-between rounded-full pl-4 pr-2 transition-all duration-500 sm:pl-5",
-            solid || open ? "bg-ink/70 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] ring-1 ring-bone/10 backdrop-blur-xl" : "bg-transparent",
+            "relative mx-auto grid h-16 max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center rounded-full px-3 transition-all duration-500 sm:px-5",
+            solid || open ? "glass-flat !bg-ink/80" : "bg-transparent",
           )}
         >
-          <Logo />
+          {/* Left: wordmark on mobile, first half of the nav on desktop */}
+          <div className="flex items-center">
+            <Logo className="lg:hidden" />
+            <nav aria-label="Primary" className="hidden lg:block">
+              <ul className="flex items-center gap-1">
+                {nav.slice(0, 3).map((item) => (
+                  <NavItem key={item.href} item={item} pathname={pathname} />
+                ))}
+              </ul>
+            </nav>
+          </div>
 
-          <nav aria-label="Primary" className="hidden lg:block">
-            <ul className="flex items-center gap-1">
-              {nav.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      aria-current={active ? "page" : undefined}
-                      className="group relative block rounded-full px-4 py-2 text-sm"
-                    >
-                      <span className="relative block overflow-hidden">
-                        <span className="block transition-transform duration-500 ease-expo group-hover:-translate-y-full">
-                          {item.label}
-                        </span>
-                        <span
-                          aria-hidden
-                          className="absolute inset-0 block translate-y-full text-marigold transition-transform duration-500 ease-expo group-hover:translate-y-0"
-                        >
-                          {item.label}
-                        </span>
-                      </span>
-                      {active && (
-                        <motion.span
-                          layoutId="nav-dot"
-                          className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-marigold"
-                        />
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          {/* Centre: the bloom mark */}
+          <Link href="/" aria-label="Maitreya Events — home" className="group hidden flex-col items-center lg:flex">
+            <LogoMark className="h-8 w-8 transition-transform duration-700 ease-expo group-hover:rotate-[180deg]" />
+            <span className="nav-link mt-1 !text-[0.55rem] !tracking-[0.4em] text-bone/70">Maitreya</span>
+          </Link>
+          <span className="lg:hidden" />
 
-          <div className="flex items-center gap-2">
+          {/* Right: rest of the nav + CTA */}
+          <div className="flex items-center justify-end gap-2">
+            <nav aria-label="Secondary" className="hidden lg:block">
+              <ul className="flex items-center gap-1">
+                {nav.slice(3).map((item) => (
+                  <NavItem key={item.href} item={item} pathname={pathname} />
+                ))}
+              </ul>
+            </nav>
             <div className="hidden sm:block">
               <Button href="/contact" trackAs="plan_event_click" icon={<ArrowIcon />}>
                 Plan your event
@@ -176,5 +166,31 @@ export function Header() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+function NavItem({ item, pathname }: { item: { label: string; href: string }; pathname: string }) {
+  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+  return (
+    <li>
+      <Link
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        className="nav-link group relative block rounded-full px-4 py-2"
+      >
+        <span className="relative block overflow-hidden">
+          <span className="block transition-transform duration-500 ease-expo group-hover:-translate-y-full">{item.label}</span>
+          <span
+            aria-hidden
+            className="absolute inset-0 block translate-y-full text-marigold transition-transform duration-500 ease-expo group-hover:translate-y-0"
+          >
+            {item.label}
+          </span>
+        </span>
+        {active && (
+          <motion.span layoutId="nav-dot" className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-marigold" />
+        )}
+      </Link>
+    </li>
   );
 }

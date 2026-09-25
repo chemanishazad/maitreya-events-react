@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getService, services } from "@/data/services";
 import { events } from "@/data/events";
-import { processSteps } from "@/data/content";
+import { runOfShow } from "@/data/content";
+import { RunOfShow } from "@/components/sections/RunOfShow";
 import { PageHero } from "@/components/layout/PageHero";
 import { FadeIn, ImageReveal, SplitReveal } from "@/components/animation/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -69,7 +70,7 @@ export default async function ServicePage({ params }: PageProps<"/services/[slug
       >
         <div className="flex flex-wrap gap-3">
           <Button href={`/contact?service=${service.slug}`} size="lg" trackAs="plan_event_click" icon={<ArrowIcon />}>
-            Plan your {service.label.toLowerCase()} event
+            Plan your event
           </Button>
         </div>
       </PageHero>
@@ -126,21 +127,7 @@ export default async function ServicePage({ params }: PageProps<"/services/[slug
         </div>
       </section>
 
-      {/* Process */}
-      <section className="bg-ink py-20 sm:py-28">
-        <div className="mx-auto max-w-[1600px] px-5 sm:px-8">
-          <SectionLabel>How it works</SectionLabel>
-          <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {processSteps.map((p, i) => (
-              <FadeIn as="li" key={p.title} delay={i * 0.06} className="rounded-3xl border border-bone/10 bg-ink-2 p-7">
-                <span className="display text-5xl text-marigold">0{i + 1}</span>
-                <h3 className="mt-4 text-2xl font-medium tracking-tight">{p.title}</h3>
-                <p className="mt-2 text-pretty text-bone/65">{p.body}</p>
-              </FadeIn>
-            ))}
-          </ol>
-        </div>
-      </section>
+      {runOfShow[service.slug] && <RunOfShow steps={runOfShow[service.slug]} service={service.title} />}
 
       {related.length > 0 && (
         <section className="bg-ink pb-20 sm:pb-28">

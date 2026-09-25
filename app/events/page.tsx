@@ -7,6 +7,8 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 import { WorkGrid } from "@/components/sections/WorkGrid";
 import { CTABand } from "@/components/sections/CTABand";
 import { pageMetadata } from "@/lib/seo";
+import { Countdown } from "@/components/ui/Countdown";
+import { formatDate } from "@/data/events";
 
 export const metadata = pageMetadata({
   title: "Upcoming Events in Chennai",
@@ -26,6 +28,19 @@ export default function EventsPage() {
         image={img.crowdNight}
         crumbs={[{ name: "Upcoming events", path: "/events" }]}
       />
+
+      {upcomingEvents[0] && (
+        <section className="bg-ink pb-16" aria-label="Next event countdown">
+          <div className="glass-flat mx-5 flex flex-col justify-between gap-6 rounded-[2rem] p-6 sm:mx-8 sm:p-10 md:flex-row md:items-center">
+            <div>
+              <p className="nav-link text-marigold">Next up · {formatDate(upcomingEvents[0].date)}</p>
+              <p className="display mt-3 text-[clamp(2rem,4vw,3.6rem)]">{upcomingEvents[0].title}</p>
+              <p className="mt-2 text-bone/70">{upcomingEvents[0].summary}</p>
+            </div>
+            <Countdown target={upcomingEvents[0].date} />
+          </div>
+        </section>
+      )}
 
       <section className="bg-ink pb-24">
         <div className="mx-auto max-w-[1600px] px-5 sm:px-8">

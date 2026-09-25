@@ -1,384 +1,279 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionValue, useScroll, useSpring, useTransform, type MotionValue } from "motion/react";
-import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import Link from "next/link";
+import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
+import { useRef, type CSSProperties } from "react";
 import { img } from "@/data/images";
 import { site } from "@/data/site";
+import { services } from "@/data/services";
+import { upcomingEvents, formatDate } from "@/data/events";
 import { Button, ArrowIcon } from "@/components/ui/Button";
+import { Masked, Plate, useAspect, usePointerDrift } from "@/components/animation/Depth";
+import { Bokeh, Garlands, Haze, LightRays, Sparkles } from "./SceneArt";
 import { useScrub } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/hooks";
 
 /**
- * Fly-through hero: plates stacked in depth. Scrolling flies the camera through a floral arch
- * toward the lit stage — the nearest garlands leave frame first — and the pointer adds drift.
+ * Fly-through hero. Scene one: through a marigold toran and a floral mandap arch toward the lit
+ * stage. The camera passes through stage haze into scene two — the celebration — where the
+ * event worlds wait as glass cards. Pointer adds drift to every plate.
  */
 export function Hero() {
   const reduce = usePrefersReducedMotion();
   return reduce ? <StaticHero /> : <FlyThroughHero />;
 }
 
+const delay = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
+
 function FlyThroughHero() {
   const ref = useRef<HTMLElement>(null);
   const aspect = useAspect();
   const portrait = aspect > 1.1;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  // A little inertia on the camera, so the flight feels weighted
-  const p = useSpring(scrollYProgress, { stiffness: 110, damping: 28, mass: 0.35 });
+  // Smooth scrolling already eases the camera — no extra spring, so the flight tracks the scroll 1:1
+  const p = scrollYProgress;
+  const { px, py } = usePointerDrift();
 
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const px = useSpring(mx, { stiffness: 40, damping: 18 });
-  const py = useSpring(my, { stiffness: 40, damping: 18 });
-
-  useEffect(() => {
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-    const onMove = (e: PointerEvent) => {
-      mx.set(e.clientX / window.innerWidth - 0.5);
-      my.set(e.clientY / window.innerHeight - 0.5);
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
-  }, [mx, my]);
-
-  const introOpacity = useScrub(p, [0, 0.22], [1, 0]);
-  const introY = useScrub(p, [0, 0.22], [0, -60]);
-  const cueOpacity = useScrub(p, [0, 0.06], [1, 0]);
-  const outroOpacity = useScrub(p, [0.72, 0.86], [0, 1]);
-  const outroScale = useScrub(p, [0.72, 1], [0.9, 1]);
-  const vignette = useScrub(p, [0, 0.6, 1], [0.75, 0.35, 0.55]);
+  const introOpacity = useScrub(p, [0, 0.16], [1, 0]);
+  const introY = useScrub(p, [0, 0.16], [0, -50]);
+  const cueOpacity = useScrub(p, [0, 0.05], [1, 0]);
+  const arrival = useScrub(p, [0.66, 0.8], [0, 1]);
+  const arrivalY = useScrub(p, [0.66, 0.86], [40, 0]);
+  const arrivalEvents = useTransform(arrival, (v) => (v > 0.6 ? "auto" : "none"));
+  const vignette = useScrub(p, [0, 0.5, 1], [0.75, 0.3, 0.45]);
 
   return (
-    <section ref={ref} className="relative h-[340vh] bg-ink lg:h-[460vh]" aria-label="Introduction">
+    <section ref={ref} className="relative h-[380vh] bg-ink lg:h-[500vh]" aria-label="Introduction">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
-        {/* Plates — far to near */}
-        <Plate p={p} px={px} py={py} depth={0.06} travel={0.35}>
+        {/* ── Scene one: the arch ─────────────────────────── far → near */}
+        <Plate p={p} px={px} py={py} depth={0.06} travel={0.5} exit={[0.55, 0.64]}>
           <Image src={img.stageBeams} alt="" fill priority sizes="100vw" className="object-cover" />
           <div className="absolute inset-0 bg-ink/35" />
         </Plate>
-
-        <Plate p={p} px={px} py={py} depth={0.12} travel={0.6} className="mix-blend-screen">
+        <Plate p={p} px={px} py={py} depth={0.12} travel={0.8} exit={[0.55, 0.64]} className="opacity-80">
           <LightRays />
         </Plate>
-
-        <Plate p={p} px={px} py={py} depth={0.3} travel={2.4} exit={[0.8, 0.95]}>
+        <Plate p={p} px={px} py={py} depth={0.3} travel={2.6} exit={[0.46, 0.58]}>
           <Masked arch={portrait ? { halfWidth: 38, top: 30, bottom: 104, blur: 0.35 } : { halfWidth: 21, top: 24, bottom: 104, blur: 0.35 }}>
             <Image src={img.mandap} alt="" fill priority sizes="100vw" className="object-cover" />
             <div className="absolute inset-0 bg-linear-to-b from-ink/30 via-transparent to-ink/60" />
           </Masked>
         </Plate>
-
-        <Plate p={p} px={px} py={py} depth={0.45} travel={3}>
+        <Plate p={p} px={px} py={py} depth={0.45} travel={3.2} exit={[0.5, 0.62]}>
           <Sparkles />
         </Plate>
-
-        <Plate p={p} px={px} py={py} depth={0.6} travel={5} exit={[0.5, 0.7]} className="brightness-[.7] blur-[1px]">
-          <Garlands variant="far" aspect={aspect} />
+        <Plate p={p} px={px} py={py} depth={0.6} travel={5} exit={[0.36, 0.5]}>
+          <div className="absolute inset-0 opacity-55">
+            <Garlands variant="far" aspect={aspect} />
+          </div>
         </Plate>
-
-        <Plate p={p} px={px} py={py} depth={0.85} travel={8} exit={[0.3, 0.48]}>
+        <Plate p={p} px={px} py={py} depth={0.85} travel={8} exit={[0.22, 0.36]}>
           <Garlands variant="near" aspect={aspect} />
         </Plate>
-
-        <Plate p={p} px={px} py={py} depth={1} travel={12} exit={[0.14, 0.3]}>
+        <Plate p={p} px={px} py={py} depth={1} travel={12} exit={[0.1, 0.22]}>
           <Bokeh />
+        </Plate>
+
+        {/* ── Scene two: the celebration ──────────────────── revealed through the haze */}
+        <Plate p={p} px={px} py={py} depth={0.08} travel={-0.12} enter={[0.54, 0.66]} origin="50% 50%">
+          <Image src={img.confettiConcert} alt="" fill sizes="100vw" className="object-cover" />
+          <div className="absolute inset-0 bg-linear-to-b from-ink/50 via-ink/20 to-ink/80" />
+        </Plate>
+        <Plate p={p} px={px} py={py} depth={0.3} travel={0.6} enter={[0.6, 0.72]}>
+          <Sparkles count={30} />
+        </Plate>
+
+        {/* Stage haze between the two scenes */}
+        <Plate p={p} px={px} py={py} depth={0.5} travel={2} enter={[0.4, 0.54]} exit={[0.6, 0.72]} origin="50% 50%">
+          <Haze />
         </Plate>
 
         {/* Readability */}
         <motion.div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,transparent_25%,#0b0a08_90%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,transparent_25%,#0b0a08_92%)]"
           style={{ opacity: vignette }}
         />
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-ink via-ink/60 to-transparent" />
+        <motion.div
+          aria-hidden
+          style={{ opacity: introOpacity }}
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-ink via-ink/55 to-transparent"
+        />
 
-        {/* Opening copy — on screen from the first frame */}
+        {/* ── Opening copy — on screen from the first frame ── */}
         <motion.div
           style={{ opacity: introOpacity, y: introY }}
-          className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-24 sm:px-8 sm:pb-28"
+          className="relative z-10 mx-auto flex h-full max-w-[1600px] items-end justify-between gap-10 px-5 pb-20 sm:px-8 sm:pb-24"
         >
-          <p className="anim-fade-up eyebrow mb-6 flex items-center gap-3 text-bone/80">
-            <span className="h-px w-10 bg-marigold" />
-            {site.descriptor}
-          </p>
-          <h1 className="display text-[clamp(3.4rem,12vw,12rem)]">
-            <span className="sr-only">Maitreya Events — We create. You celebrate.</span>
-            <HeroLine delay={0.05}>We create.</HeroLine>
-            <HeroLine delay={0.22} className="font-serif font-normal italic tracking-[-0.03em] text-marigold">
-              You celebrate.
-            </HeroLine>
-          </h1>
-          <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-            <p className="anim-fade-up max-w-md text-pretty text-base leading-relaxed text-bone/80 sm:text-lg" style={delay(0.55)}>
+          <div className="max-w-2xl">
+            <p className="anim-fade-up nav-link mb-5 flex items-center gap-3 text-bone/75">
+              <span className="h-px w-10 bg-marigold" />
+              {site.descriptor}
+            </p>
+            <h1 className="display whitespace-nowrap text-[12.5vw] leading-[0.92] sm:text-[clamp(2.7rem,6.4vw,7rem)]">
+              <span className="sr-only">Maitreya Events — We create. You celebrate.</span>
+              <HeroLine delay={0.05}>
+                We create<span className="ml-[0.15em] inline-block translate-y-[-0.08em] text-[0.55em] text-marigold">›</span>
+              </HeroLine>
+              <HeroLine delay={0.2} className="italic text-marigold">
+                you
+              </HeroLine>
+              <HeroLine delay={0.3}>celebrate.</HeroLine>
+            </h1>
+            <p className="anim-fade-up mt-6 max-w-md text-pretty text-sm leading-relaxed text-bone/75 sm:text-base" style={delay(0.55)}>
               End-to-end event management, entertainment and production for weddings, celebrations, corporate events,
               cultural programmes and live experiences.
             </p>
-            <div className="anim-fade-up flex flex-wrap gap-3" style={delay(0.7)}>
-              <Button href="/contact" size="lg" trackAs="plan_event_click" icon={<ArrowIcon />}>
+            <div className="anim-fade-up mt-7 flex flex-wrap gap-3" style={delay(0.7)}>
+              <Button href="/contact" trackAs="plan_event_click" icon={<ArrowIcon />}>
                 Plan your event
               </Button>
-              <Button href="/portfolio" size="lg" variant="ghost" trackAs="explore_events_click">
+              <Button href="/portfolio" variant="ghost" trackAs="explore_events_click">
                 Explore our events
               </Button>
             </div>
           </div>
-        </motion.div>
 
-        {/* Arrival */}
-        <motion.div
-          style={{ opacity: outroOpacity, scale: outroScale }}
-          className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-5 text-center"
-        >
-          <p className="eyebrow text-marigold">Weddings · Corporate · Cultural · Live</p>
-          <p className="display mt-5 text-[clamp(3rem,10vw,10rem)] drop-shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-            Step into <span className="font-serif font-normal italic text-marigold">the celebration.</span>
-          </p>
+          <HeroCards />
         </motion.div>
 
         {/* Scroll cue */}
         <motion.div
           style={{ opacity: cueOpacity }}
-          className="absolute bottom-8 right-5 z-10 hidden items-center gap-3 sm:right-8 sm:flex"
+          className="pointer-events-none absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex"
         >
-          <span className="eyebrow text-bone/60">Scroll to enter</span>
-          <span className="relative block h-12 w-px overflow-hidden bg-bone/15">
-            <span className="scroll-cue-line absolute inset-0 bg-marigold" />
-          </span>
+          <span className="nav-link text-bone/60">Enter</span>
+          <svg viewBox="0 0 16 16" className="h-4 w-4 animate-bounce text-marigold" aria-hidden>
+            <path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </motion.div>
+
+        {/* ── Arrival ─────────────────────────────────────── */}
+        <motion.div
+          style={{ opacity: arrival, y: arrivalY, pointerEvents: arrivalEvents }}
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center px-5 text-center"
+        >
+          <p className="nav-link text-marigold">Eight event worlds · one team</p>
+          <p className="display mt-4 text-[clamp(2.6rem,7.5vw,7.5rem)] drop-shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+            Step into <span className="italic text-marigold">the</span> celebration
+          </p>
+          <p className="mx-auto mt-5 max-w-lg text-pretty text-sm text-bone/80 sm:text-base">
+            Weddings, corporate shows, cultural festivals and live nights — planned, produced and run by one crew.
+          </p>
+          <ArrivalCards p={p} />
         </motion.div>
       </div>
     </section>
   );
 }
 
-/** Viewport height ÷ width, stepped to 0.1. SSR assumes a 16:10 desktop. */
-function useAspect() {
-  return useSyncExternalStore(
-    (cb) => {
-      window.addEventListener("resize", cb);
-      return () => window.removeEventListener("resize", cb);
-    },
-    () => Math.round((window.innerHeight / window.innerWidth) * 10) / 10,
-    () => 0.6,
+/** Frosted media cards, bottom-right of the first frame */
+function HeroCards() {
+  const next = upcomingEvents[0];
+  return (
+    <div className="anim-fade-up hidden shrink-0 gap-3 lg:flex" style={delay(0.85)}>
+      <Link href="/portfolio" className="group glass-flat relative h-44 w-36 overflow-hidden rounded-2xl xl:h-48 xl:w-40">
+        <Image src={img.weddingCelebration} alt="" fill sizes="160px" className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-110" />
+        <span className="absolute inset-x-3 bottom-3 flex items-center gap-2 text-xs font-medium">
+          <span className="glass-flat flex h-7 w-7 items-center justify-center rounded-full">
+            <svg viewBox="0 0 16 16" className="ml-0.5 h-3 w-3" aria-hidden>
+              <path d="M4 2.5v11l9-5.5z" fill="currentColor" />
+            </svg>
+          </span>
+          See the work
+        </span>
+      </Link>
+      <Link href="/services" className="glass-flat flex h-44 w-36 flex-col justify-end rounded-2xl p-4 transition-transform duration-500 hover:-translate-y-1 xl:h-48 xl:w-40">
+        <span className="display text-5xl">{String(services.length).padStart(2, "0")}</span>
+        <span className="mt-1 text-xs font-medium text-bone/80">Event worlds</span>
+      </Link>
+      {next && (
+        <Link href={`/events/${next.slug}`} className="group glass-flat relative h-44 w-36 overflow-hidden rounded-2xl xl:h-48 xl:w-40">
+          <Image src={next.heroImage} alt="" fill sizes="160px" className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-110" />
+          <span className="absolute inset-x-3 bottom-3 text-left text-xs font-medium leading-tight">
+            <span className="nav-link block !text-[0.55rem] text-marigold">Next up · {formatDate(next.date, { day: "numeric", month: "short" })}</span>
+            {next.title}
+          </span>
+        </Link>
+      )}
+    </div>
   );
 }
 
-const delay = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
+/** Fanned glass cards at the end of the flight — side cards sit back and blur */
+function ArrivalCards({ p }: { p: MotionValue<number> }) {
+  const picks = services.slice(0, 5);
+  const tints = [
+    "from-[#fff1d6] to-[#f3c98f]",
+    "from-[#fde7e0] to-[#e9b3ae]",
+    "from-[#fff7e8] to-[#f6dcae]",
+    "from-[#f3e8ff] to-[#cdb9ea]",
+    "from-[#e6f4ff] to-[#b3cfe8]",
+  ];
+  const order = [3, 1, 0, 2, 4]; // Weddings in the centre
+  return (
+    <div className="relative mt-10 flex h-[46vh] max-h-[360px] min-h-[240px] w-full max-w-5xl items-center justify-center">
+      {order.map((idx, slot) => {
+        const s = picks[idx];
+        if (!s) return null;
+        const offset = slot - 2;
+        return <ArrivalCard key={s.slug} p={p} offset={offset} index={idx} service={s} tint={tints[slot]} />;
+      })}
+    </div>
+  );
+}
 
-/**
- * One depth plate. `travel` is how far the camera pushes into it over the whole scroll —
- * near plates travel far (they fly past), far plates barely move. `depth` scales pointer drift.
- */
-function Plate({
+function ArrivalCard({
   p,
-  px,
-  py,
-  depth,
-  travel,
-  exit,
-  className,
-  children,
+  offset,
+  index,
+  service,
+  tint,
 }: {
   p: MotionValue<number>;
-  px: MotionValue<number>;
-  py: MotionValue<number>;
-  depth: number;
-  travel: number;
-  exit?: [number, number];
-  className?: string;
-  children: ReactNode;
+  offset: number;
+  index: number;
+  service: (typeof services)[number];
+  tint: string;
 }) {
-  const scale = useTransform(p, (v) => 1 + v * v * travel + v * 0.15);
-  const opacity = useScrub(p, exit ?? [0, 1], exit ? [1, 0] : [1, 1]);
-  const x = useTransform(px, (v) => v * -90 * depth);
-  const y = useTransform(py, (v) => v * -60 * depth);
+  const abs = Math.abs(offset);
+  const start = 0.7 + abs * 0.04;
+  const rise = useScrub(p, [start, start + 0.12], [120, 0]);
+  const fade = useScrub(p, [start, start + 0.1], [0, 1]);
+  const side = abs === 2;
   return (
     <motion.div
-      aria-hidden
-      className={`pointer-events-none absolute -inset-[6%] origin-[50%_58%] will-change-transform ${className ?? ""}`}
-      style={{ scale, opacity, x, y }}
+      style={{ y: rise, opacity: fade, x: `${offset * (side ? 92 : 104)}%`, zIndex: 10 - abs }}
+      className={`absolute ${side ? "hidden scale-75 opacity-70 md:block" : abs === 1 ? "scale-90" : ""}`}
     >
-      {children}
+      <Link
+        href={`/services/${service.slug}`}
+        tabIndex={side ? -1 : undefined}
+        aria-hidden={side || undefined}
+        className={`group flex h-[40vh] max-h-[300px] min-h-[210px] w-[34vw] max-w-[220px] flex-col justify-between rounded-3xl border border-white/40 bg-linear-to-br ${tint} p-5 text-left text-ink shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:-translate-y-2`}
+      >
+        <span className="flex items-center justify-between">
+          <span className="font-mono text-[0.65rem] tracking-widest text-ink/60">{String(index + 1).padStart(2, "0")}</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/70 transition-transform duration-500 group-hover:rotate-[-45deg]">
+            <ArrowIcon className="h-3.5 w-3.5" />
+          </span>
+        </span>
+        <span>
+          <span className="block font-serif text-lg leading-[1.05] sm:text-2xl md:text-[1.7rem]">{service.title}</span>
+          <span className="mt-2 hidden text-xs leading-snug text-ink/65 sm:block">{service.kicker}</span>
+        </span>
+      </Link>
     </motion.div>
   );
 }
 
-/** Cuts an arch-shaped window (flat bottom, round top) out of a plate. Units are % of the plate. */
-function Masked({
-  arch,
-  children,
-}: {
-  arch: { halfWidth: number; top: number; bottom: number; blur: number };
-  children: ReactNode;
-}) {
-  const { halfWidth: w, top, bottom, blur } = arch;
-  const l = 50 - w;
-  const r = 50 + w;
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><filter id='b' x='-20%' y='-20%' width='140%' height='140%'><feGaussianBlur stdDeviation='${blur}'/></filter><path filter='url(#b)' fill='#000' fill-rule='evenodd' d='M-20 -20H120V120H-20Z M${l} ${bottom}V${top + w}A${w} ${w} 0 0 1 ${r} ${top + w}V${bottom}Z'/></svg>`;
-  const mask = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+function HeroLine({ children, delay: d, className }: { children: React.ReactNode; delay: number; className?: string }) {
   return (
-    <div
-      className="absolute inset-0"
-      style={{ maskImage: mask, WebkitMaskImage: mask, maskSize: "100% 100%", WebkitMaskSize: "100% 100%", maskRepeat: "no-repeat" }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function LightRays() {
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      <div
-        className="absolute left-1/2 top-[-20%] h-[140%] w-[140%] -translate-x-1/2 animate-[rays_14s_ease-in-out_infinite_alternate] opacity-60"
-        style={{
-          background:
-            "repeating-conic-gradient(from 168deg at 50% 0%, rgba(255,214,150,0.0) 0deg, rgba(255,214,150,0.22) 2deg, rgba(255,214,150,0) 5deg, rgba(255,214,150,0) 9deg)",
-          maskImage: "radial-gradient(ellipse 45% 75% at 50% 0%, #000 20%, transparent 75%)",
-          WebkitMaskImage: "radial-gradient(ellipse 45% 75% at 50% 0%, #000 20%, transparent 75%)",
-        }}
-      />
-      <div className="absolute left-1/2 top-[52%] h-[55vmin] w-[55vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(247,194,124,0.55),transparent_65%)] blur-2xl" />
-    </div>
-  );
-}
-
-/** Round to 2 decimals so SSR and client serialise identical attribute strings */
-const r2 = (n: number) => Math.round(n * 100) / 100;
-
-/** Deterministic pseudo-random (same on server and client — no hydration mismatch) */
-const rand = (i: number, salt = 1) => {
-  const x = Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453;
-  return x - Math.floor(x);
-};
-
-function Sparkles() {
-  return (
-    <div className="absolute inset-0">
-      {Array.from({ length: 46 }).map((_, i) => {
-        const size = r2(2 + rand(i, 3) * 4);
-        return (
-          <span
-            key={i}
-            className="absolute rounded-full bg-marigold-soft animate-[float_linear_infinite]"
-            style={{
-              left: `${r2(8 + rand(i, 1) * 84)}%`,
-              top: `${r2(10 + rand(i, 2) * 80)}%`,
-              width: size,
-              height: size,
-              opacity: r2(0.35 + rand(i, 4) * 0.55),
-              boxShadow: `0 0 ${size * 3}px rgba(247,194,124,0.9)`,
-              animationDuration: `${r2(7 + rand(i, 5) * 9)}s`,
-              animationDelay: `${r2(-rand(i, 6) * 12)}s`,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-/**
- * Marigold toran curtain framing the arch: a scalloped swag across the top and dense strands
- * down both sides, longest at the edges. `far` is a smaller, sparser copy for extra depth.
- */
-function Garlands({ variant, aspect }: { variant: "near" | "far"; aspect: number }) {
-  const near = variant === "near";
-  // The SVG stretches to the viewport; k undoes the vertical stretch so flowers stay round
-  const k = Math.max(1, aspect / 0.6);
-  const portrait = k > 1.6;
-  const step = (near ? 2.6 : 3.4) * (portrait ? 2.2 : 1);
-  const flower = (near ? 1.25 : 0.9) * (portrait ? 2.2 : 1);
-  const strands: { x: number; len: number }[] = [];
-  for (let x = 1; x < 100; x += step) {
-    const edge = Math.min(x, 100 - x); // distance from the nearest side
-    if (edge > (portrait ? (near ? 12 : 16) : near ? 27 : 32)) continue; // keep the centre open
-    const len = Math.round(((near ? 30 : 24) - edge * (near ? 0.85 : 0.6) * (portrait ? 2 : 1) + rand(Math.round(x * 10), 7) * 5) * (portrait ? k / 2.2 : 1));
-    strands.push({ x: r2(x), len: Math.max(4, len) });
-  }
-  const swag = Math.round(100 / (flower * 1.6));
-
-  return (
-    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-      <defs>
-        <radialGradient id={`mg-${variant}`} cx="42%" cy="38%" r="62%">
-          <stop offset="0%" stopColor="#ffd98a" />
-          <stop offset="45%" stopColor="#f4a340" />
-          <stop offset="100%" stopColor="#b9480f" />
-        </radialGradient>
-        <radialGradient id={`my-${variant}`} cx="42%" cy="38%" r="62%">
-          <stop offset="0%" stopColor="#fff3b0" />
-          <stop offset="50%" stopColor="#f6c343" />
-          <stop offset="100%" stopColor="#b8780c" />
-        </radialGradient>
-      </defs>
-      {Array.from({ length: swag + 1 }).map((_, i) => {
-        const t = i / swag;
-        const y = r2((2 + Math.abs(Math.sin(t * Math.PI * 4)) * 6) / k);
-        return <Marigold key={`s${i}`} x={r2(t * 100)} y={y} r={flower * 1.15} k={k} fill={`url(#${i % 3 ? "mg" : "my"}-${variant})`} />;
-      })}
-      {strands.map((st, si) =>
-        Array.from({ length: st.len }).map((_, j) => {
-          const leaf = j > 0 && j % 5 === 0;
-          const x = r2(st.x + Math.sin(j * 0.55 + si) * 0.35);
-          const y = r2((6 + j * flower * 1.9) / k);
-          return leaf ? (
-            <ellipse key={`l${si}-${j}`} cx={x} cy={y} rx={r2(flower * 0.45)} ry={r2((flower * 1.1) / k)} fill="#2f6b2a" />
-          ) : (
-            <Marigold key={`f${si}-${j}`} x={x} y={y} r={flower} k={k} fill={`url(#${(si + j) % 3 ? "mg" : "my"}-${variant})`} />
-          );
-        }),
-      )}
-    </svg>
-  );
-}
-
-/** A marigold head: gradient body with a ring of darker petal edges */
-function Marigold({ x, y, r, k, fill }: { x: number; y: number; r: number; k: number; fill: string }) {
-  return (
-    <g>
-      <ellipse cx={x} cy={y} rx={r2(r)} ry={r2((r * 1.55) / k)} fill={fill} />
-      <ellipse cx={x} cy={y} rx={r2(r * 0.72)} ry={r2((r * 1.1) / k)} fill="none" stroke="#a8400c" strokeOpacity={0.35} strokeWidth={0.18} />
-    </g>
-  );
-}
-
-/** Out-of-focus marigolds right in front of the lens */
-function Bokeh() {
-  const blobs = [
-    { l: -4, t: 62, s: 26 },
-    { l: 82, t: 70, s: 30 },
-    { l: 88, t: 8, s: 18 },
-    { l: -6, t: 4, s: 20 },
-    { l: 70, t: 88, s: 16 },
-    { l: 12, t: 90, s: 14 },
-  ];
-  return (
-    <div className="absolute inset-0">
-      {blobs.map((b, i) => (
-        <span
-          key={i}
-          className="absolute rounded-full blur-2xl"
-          style={{
-            left: `${b.l}%`,
-            top: `${b.t}%`,
-            width: `${b.s}vmax`,
-            height: `${b.s}vmax`,
-            background: `radial-gradient(circle, ${i % 2 ? "rgba(245,197,66,0.55)" : "rgba(244,163,64,0.6)"}, transparent 70%)`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function HeroLine({ children, delay: d, className }: { children: string; delay: number; className?: string }) {
-  return (
-    <span aria-hidden className={`block overflow-hidden pb-[0.06em] ${className ?? ""}`}>
-      {children.split("").map((ch, i) => (
-        <span key={i} className="anim-rise" style={{ "--d": `${d + i * 0.028}s` } as CSSProperties}>
-          {ch === " " ? " " : ch}
-        </span>
-      ))}
+    <span aria-hidden className={`block overflow-hidden pb-[0.04em] ${className ?? ""}`}>
+      <span className="anim-rise" style={delay(d)}>
+        {children}
+      </span>
     </span>
   );
 }
@@ -390,9 +285,10 @@ function StaticHero() {
       <Image src={img.mandap} alt="Decorated wedding mandap stage with floral canopy" fill priority sizes="100vw" className="object-cover" />
       <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/50 to-ink/30" />
       <div className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-24 sm:px-8">
-        <h1 className="display text-[clamp(3.4rem,12vw,12rem)]">
-          We create.
-          <span className="block font-serif font-normal italic text-marigold">You celebrate.</span>
+        <h1 className="display text-[clamp(3.2rem,9.5vw,9.5rem)]">
+          We create
+          <span className="block italic text-marigold">you</span>
+          celebrate.
         </h1>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button href="/contact" size="lg" trackAs="plan_event_click" icon={<ArrowIcon />}>

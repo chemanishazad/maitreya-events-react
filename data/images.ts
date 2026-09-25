@@ -42,7 +42,6 @@ export const img = {
   stagePurple: u("1574391884720-bbc3740c59d1"),
   holi: u("1603228254119-e6a4d095dc59"),
   fireworks: u("1567593810070-7a3d471af022"),
-  festiveDecor: u("1545048702-79362596cdc9"),
   weddingTableLong: u("1519225421980-715cb0215aed"),
   rings: u("1465495976277-4387d4b0b4c6"),
   toast: u("1527529482837-4698179dc6ce"),

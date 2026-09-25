@@ -5,6 +5,7 @@ import { cloneElement, useId, useRef, useState } from "react";
 import clsx from "clsx";
 import { budgetRanges, eventTypes, guestRanges, serviceOptions } from "@/data/content";
 import { enquiryToText, validateEnquiry, type Enquiry, type EnquiryErrors } from "@/lib/enquiry";
+import { sendEnquiryEmail } from "@/lib/emailjs";
 import { whatsappLink } from "@/data/site";
 import { track } from "@/lib/analytics";
 import { ArrowIcon, Button, WhatsAppIcon } from "@/components/ui/Button";
@@ -60,22 +61,21 @@ export function EnquiryForm({
       document.getElementById(`${formId}-${first}`)?.focus();
       return;
     }
+    // Bots fill the hidden field or submit instantly — pretend success, send nothing
+    const bot = Boolean(honeypot.current?.value) || (startedAt.current > 0 && Date.now() - startedAt.current < 2500);
+    if (bot) {
+      setStatus("success");
+      return;
+    }
+
     // Open WhatsApp straight away (inside the click, so browsers don't block it) with every detail filled in
     window.open(whatsappLink(enquiryToText(data, "whatsapp")), "_blank", "noopener");
 
     setStatus("submitting");
     setServerError("");
     try {
-      const res = await fetch("/api/enquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, website: honeypot.current?.value, startedAt: startedAt.current }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json.ok) {
-        if (json.errors) setErrors(json.errors);
-        throw new Error(json.error ?? "Something went wrong.");
-      }
+      // Email copy via EmailJS. WhatsApp already carries the lead, so an email failure isn't shown as an error.
+      await sendEnquiryEmail(data).catch(() => false);
       track("generate_lead", { event_type: data.eventType, form: variant });
       setStatus("success");
     } catch (err) {
