@@ -26,6 +26,7 @@ export default function PortfolioPage() {
       <PageHero
         eyebrow="Our work"
         lines={["Moments", "we made."]}
+        seoHeading="Event Portfolio — Weddings, Corporate, Cultural and Live Events in Chennai"
         accentLine={1}
         intro="A selection of the weddings, celebrations, corporate shows and live events we have planned and produced."
         image={img.confettiConcert}

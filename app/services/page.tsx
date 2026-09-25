@@ -20,6 +20,7 @@ export default function ServicesPage() {
       <PageHero
         eyebrow="Services"
         lines={["Every kind", "of event."]}
+        seoHeading="Event Management Services in Chennai"
         accentLine={1}
         intro="Eight specialisms, one in-house team. Choose the part you need — or hand us the whole event from concept to celebration."
         image={img.stageBeams}

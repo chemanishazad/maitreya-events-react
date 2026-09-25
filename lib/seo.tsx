@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { site } from "@/data/site";
 import type { EventItem } from "@/data/events";
+import { services } from "@/data/services";
+import { config } from "@/lib/config";
 
 export const absoluteUrl = (path = "/") => new URL(path, site.url).toString();
 
@@ -8,27 +10,37 @@ export function pageMetadata({
   title,
   description,
   path,
-  image,
+  image = "/opengraph-image",
+  noindex = false,
 }: {
   title: string;
   description: string;
   path: string;
+  /** Link-preview image (WhatsApp, Facebook, LinkedIn, X). Defaults to the branded card. */
   image?: string;
+  /** Keep the page out of search results (still followed for links) */
+  noindex?: boolean;
 }): Metadata {
+  const images = [{ url: image, width: 1200, height: 630, alt: `${title} — ${site.name}` }];
   return {
     title,
     description,
     alternates: { canonical: path },
+    ...(noindex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
+      type: "website",
+      siteName: site.name,
+      locale: "en_IN",
       title: `${title} | ${site.name}`,
       description,
       url: path,
-      ...(image ? { images: [{ url: image, width: 1200, height: 630, alt: title }] } : {}),
+      images,
     },
     twitter: {
+      card: "summary_large_image",
       title: `${title} | ${site.name}`,
       description,
-      ...(image ? { images: [image] } : {}),
+      images: [image],
     },
   };
 }
@@ -50,15 +62,41 @@ export const organizationSchema = {
   slogan: site.tagline,
   description: site.description,
   url: site.url,
-  logo: absoluteUrl("/icon.svg"),
+  logo: absoluteUrl("/apple-icon"),
   image: absoluteUrl("/opengraph-image"),
   telephone: site.phone,
   email: site.email,
   address: {
     "@type": "PostalAddress",
+    ...(config.streetAddress ? { streetAddress: config.streetAddress } : {}),
+    ...(config.postalCode ? { postalCode: config.postalCode } : {}),
     addressLocality: site.address.locality,
     addressRegion: site.address.region,
     addressCountry: site.address.country,
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    telephone: site.phone,
+    email: site.email,
+    areaServed: "IN",
+  },
+  knowsAbout: [
+    "Event management",
+    "Wedding planning",
+    "Corporate events",
+    "Cultural programmes",
+    "Stage, sound and lighting production",
+    "LED walls and AV",
+    "Entertainment and artist management",
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Event services",
+    itemListElement: services.map((s) => ({
+      "@type": "Offer",
+      itemOffered: { "@type": "Service", name: s.title, url: absoluteUrl(`/services/${s.slug}`) },
+    })),
   },
   areaServed: [
     { "@type": "City", name: "Chennai" },

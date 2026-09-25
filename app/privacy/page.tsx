@@ -4,7 +4,7 @@ import { LegalPage } from "@/components/layout/LegalPage";
 
 export const metadata = pageMetadata({
   title: "Privacy Policy",
-  description: "How Maitreya Events collects and uses the information you share through this website.",
+  description: "How Maitreya Events collects, uses and protects the details you share through our event enquiry form and website.",
   path: "/privacy",
 });
 

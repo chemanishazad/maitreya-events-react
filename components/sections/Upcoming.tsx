@@ -16,7 +16,7 @@ export function Upcoming() {
             <h2 id="upcoming-heading" className="sr-only">
               Upcoming events
             </h2>
-            <SplitReveal
+            <SplitReveal as="p"
               lines={["Save", "the date."]}
               className="display mt-6 text-[clamp(2.8rem,7vw,7rem)]"
               accentLine={1}

@@ -29,4 +29,12 @@ export const config = {
   },
 
   gaId: process.env.NEXT_PUBLIC_GA_ID ?? "",
+
+  // Search engine ownership checks (Search Console → HTML tag method: paste only the content="…" value)
+  googleVerification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? "",
+  bingVerification: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ?? "",
+
+  // Optional full address for Google (Maps / local results). Leave empty to show city only.
+  streetAddress: process.env.NEXT_PUBLIC_ADDRESS_STREET ?? "",
+  postalCode: process.env.NEXT_PUBLIC_ADDRESS_POSTAL_CODE ?? "",
 };

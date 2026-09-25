@@ -55,7 +55,15 @@ export const metadata: Metadata = {
     title: `${site.name} — ${site.tagline}`,
     description: site.description,
   },
-  robots: isIndexable ? { index: true, follow: true } : { index: false, follow: false },
+  robots: isIndexable
+    ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } }
+    : { index: false, follow: false },
+  verification: {
+    ...(config.googleVerification ? { google: config.googleVerification } : {}),
+    ...(config.bingVerification ? { other: { "msvalidate.01": config.bingVerification } } : {}),
+  },
+  formatDetection: { telephone: true, email: true, address: false },
+  category: "events",
 };
 
 export const viewport: Viewport = {

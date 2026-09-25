@@ -216,7 +216,7 @@ export const services: Service[] = [
         a: "Yes. We work alongside student organisers and faculty coordinators, and keep the plan and budget transparent for both.",
       },
     ],
-    seoTitle: "College Culturals & School Event Organisers in Chennai",
+    seoTitle: "College Culturals & School Event Organisers, Chennai",
     seoDescription:
       "College culturals and school annual day organisers in Chennai — stage, sound, lighting, artist nights and on-ground event management.",
   },

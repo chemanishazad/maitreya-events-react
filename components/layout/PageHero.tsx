@@ -18,6 +18,7 @@ export function PageHero({
   eyebrow,
   lines,
   accentLine,
+  seoHeading,
   intro,
   image,
   imageAlt = "",
@@ -27,6 +28,8 @@ export function PageHero({
   eyebrow: string;
   lines: string[];
   accentLine?: number;
+  /** Keyword-rich H1 for search engines; the styled `lines` stay as the visual heading */
+  seoHeading?: string;
   intro?: string;
   image?: string;
   imageAlt?: string;
@@ -77,14 +80,17 @@ export function PageHero({
             {eyebrow}
           </p>
         </FadeIn>
-        <SplitReveal
-          as="h1"
-          immediate
-          delay={0.1}
-          lines={lines}
-          accentLine={accentLine}
-          className="display mt-6 max-w-[14ch] text-[clamp(2.8rem,7.5vw,8rem)]"
-        />
+        {seoHeading && <h1 className="sr-only">{seoHeading}</h1>}
+        <div aria-hidden={seoHeading ? true : undefined}>
+          <SplitReveal
+            as={seoHeading ? "p" : "h1"}
+            immediate
+            delay={0.1}
+            lines={lines}
+            accentLine={accentLine}
+            className="display mt-6 max-w-[14ch] text-[clamp(2.8rem,7.5vw,8rem)]"
+          />
+        </div>
         {intro && (
           <FadeIn immediate delay={0.45}>
             <p className="mt-8 max-w-2xl text-pretty text-lg leading-relaxed text-bone/80 sm:text-xl">{intro}</p>

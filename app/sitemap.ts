@@ -20,7 +20,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
-    ...events.map((e) => ({
+    // Placeholder "sample" events are not listed until they are replaced with real ones
+    ...events.filter((e) => !e.sample).map((e) => ({
       url: `${site.url}/events/${e.slug}`,
       lastModified: new Date(e.date),
       changeFrequency: e.status === "upcoming" ? ("weekly" as const) : ("yearly" as const),

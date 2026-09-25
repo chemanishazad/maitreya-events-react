@@ -112,7 +112,7 @@ function FlyThroughHero() {
               {site.descriptor}
             </p>
             <h1 className="display whitespace-nowrap text-[12.5vw] leading-[0.92] sm:text-[clamp(2.7rem,6.4vw,7rem)]">
-              <span className="sr-only">Maitreya Events — We create. You celebrate.</span>
+              <span className="sr-only">Maitreya Events — Event Management Company in Chennai. We create. You celebrate.</span>
               <HeroLine delay={0.05}>
                 We create<span className="ml-[0.15em] inline-block translate-y-[-0.08em] text-[0.55em] text-marigold">›</span>
               </HeroLine>

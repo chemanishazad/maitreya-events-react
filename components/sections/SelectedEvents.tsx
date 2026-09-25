@@ -38,7 +38,7 @@ export function SelectedEvents() {
             <h2 id="selected-heading" className="sr-only">
               Selected events
             </h2>
-            <SplitReveal lines={["Proof, not", "promises."]} className="display mt-6 text-[clamp(2.8rem,7vw,7rem)]" accentLine={1} />
+            <SplitReveal as="p" lines={["Proof, not", "promises."]} className="display mt-6 text-[clamp(2.8rem,7vw,7rem)]" accentLine={1} />
           </div>
           <div className="flex items-center gap-3">
             <CarouselButton label="Previous event" onClick={() => go(-1)} flip />

@@ -33,7 +33,7 @@ export function Moments() {
           <h2 id="moments-heading" className="sr-only">
             Moments we made
           </h2>
-          <SplitReveal lines={["Moments", "we made."]} accentLine={1} className="display mt-6 text-[clamp(2.6rem,6.5vw,6.5rem)]" />
+          <SplitReveal as="p" lines={["Moments", "we made."]} accentLine={1} className="display mt-6 text-[clamp(2.6rem,6.5vw,6.5rem)]" />
         </div>
         <p className="max-w-sm text-pretty text-bone/70">
           Every kind of celebration, from the first ritual to the last song. Scroll faster — the moments lean in.

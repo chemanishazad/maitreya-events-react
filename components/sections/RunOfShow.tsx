@@ -23,7 +23,7 @@ export function RunOfShow({ steps, service }: { steps: Step[]; service: string }
             <h2 id="run-heading" className="sr-only">
               A typical {service} run of show
             </h2>
-            <SplitReveal lines={["A typical", "run of show."]} accentLine={1} className="display mt-6 text-[clamp(2.4rem,4.8vw,4.8rem)]" />
+            <SplitReveal as="p" lines={["A typical", "run of show."]} accentLine={1} className="display mt-6 text-[clamp(2.4rem,4.8vw,4.8rem)]" />
             <p className="mt-6 max-w-sm text-pretty text-bone/65">
               An example flow for {service.toLowerCase()} with us. Every event gets its own plan.
             </p>

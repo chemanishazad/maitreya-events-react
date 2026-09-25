@@ -59,6 +59,7 @@ export default async function ServicePage({ params }: PageProps<"/services/[slug
       <PageHero
         eyebrow={service.kicker}
         lines={rest.length ? [first, rest.join(" ")] : [first]}
+        seoHeading={service.seoTitle}
         accentLine={rest.length ? 1 : undefined}
         intro={service.blurb}
         image={service.image}

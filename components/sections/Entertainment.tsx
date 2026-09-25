@@ -36,7 +36,7 @@ export function Entertainment() {
             <h2 id="ent-heading" className="sr-only">
               Entertainment
             </h2>
-            <SplitReveal
+            <SplitReveal as="p"
               lines={["The people", "on stage."]}
               className="display mt-6 text-[clamp(2.8rem,6vw,6rem)]"
               accentLine={1}

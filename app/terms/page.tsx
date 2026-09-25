@@ -4,7 +4,7 @@ import { LegalPage } from "@/components/layout/LegalPage";
 
 export const metadata = pageMetadata({
   title: "Terms of Use",
-  description: "Terms for using the Maitreya Events website.",
+  description: "Terms of use for the Maitreya Events website — content, enquiries, quotes and bookings for events in Chennai and Tamil Nadu.",
   path: "/terms",
 });
 

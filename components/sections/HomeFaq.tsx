@@ -16,7 +16,7 @@ export function HomeFaq() {
           <h2 id="faq-heading" className="sr-only">
             Frequently asked questions
           </h2>
-          <SplitReveal lines={["Questions,", "answered."]} accentLine={1} className="display mt-6 text-[clamp(2.6rem,5.5vw,5.5rem)]" />
+          <SplitReveal as="p" lines={["Questions,", "answered."]} accentLine={1} className="display mt-6 text-[clamp(2.6rem,5.5vw,5.5rem)]" />
           <p className="mt-6 max-w-sm text-pretty text-bone/70">Anything else? Ask us directly — a real person from our team will get back to you.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button href={whatsappLink()} trackAs="whatsapp_click" icon={<WhatsAppIcon />}>

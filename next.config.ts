@@ -11,6 +11,17 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/photo-**" },
     ],
   },
+  // One canonical host for Google: www.maitreyaevents.com → maitreyaevents.com (301)
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.maitreyaevents.com" }],
+        destination: "https://maitreyaevents.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

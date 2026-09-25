@@ -23,6 +23,7 @@ export default function EventsPage() {
       <PageHero
         eyebrow="Upcoming events"
         lines={["What's", "happening."]}
+        seoHeading="Upcoming Events in Chennai by Maitreya Events"
         accentLine={1}
         intro="Public events, festivals and live shows produced by Maitreya Events. Register your interest and we'll share tickets and details as they open."
         image={img.crowdNight}

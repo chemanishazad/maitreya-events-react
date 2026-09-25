@@ -7,7 +7,7 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Plan Your Event — Contact Maitreya Events",
+  title: "Contact Us — Plan Your Event in Chennai",
   description:
     "Tell us about your wedding, corporate event, celebration or show. Get a call back from Maitreya Events in Chennai, or message us on WhatsApp.",
   path: "/contact",
@@ -42,6 +42,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
       <PageHero
         eyebrow="Plan your event"
         lines={["Let's talk", "celebrations."]}
+        seoHeading="Contact Maitreya Events — Plan Your Event in Chennai"
         accentLine={1}
         intro="Share a few details and we'll call you back with ideas, availability and a rough budget. Prefer to chat? WhatsApp is the fastest way to reach us."
         image={img.sparklers}

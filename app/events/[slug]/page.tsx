@@ -23,10 +23,17 @@ export async function generateMetadata({ params }: PageProps<"/events/[slug]">):
   const e = getEvent(slug);
   if (!e) return {};
   const place = e.venue ? `${e.venue}, ${e.location}` : e.location;
+  const title = `${e.title} — ${e.type} in ${place}`;
   return pageMetadata({
-    title: e.seoTitle ?? `${e.title} — ${e.type} in ${place}`,
-    description: e.seoDescription ?? e.summary,
+    // Keep titles within ~60 characters so Google shows them in full
+    title: e.seoTitle ?? (title.length > 60 ? `${e.title} — ${e.type}, ${e.location}` : title),
+    description:
+      e.seoDescription ??
+      `${e.summary} ${e.status === "upcoming" ? "Dates, venue and registration" : "Services, production and highlights"} from Maitreya Events, ${e.location}.`,
     path: `/events/${e.slug}`,
+    image: e.heroImage,
+    // Sample (placeholder) events stay out of Google until real ones replace them
+    noindex: Boolean(e.sample),
   });
 }
 
@@ -55,6 +62,7 @@ export default async function EventPage({ params }: PageProps<"/events/[slug]">)
       <PageHero
         eyebrow={upcoming ? `Upcoming · ${event.type}` : `Case study · ${event.type}`}
         lines={[event.title]}
+        seoHeading={`${event.title} — ${event.type} in ${event.venue ? `${event.venue}, ` : ""}${event.location}`}
         intro={event.summary}
         image={event.heroImage}
         imageAlt={event.title}

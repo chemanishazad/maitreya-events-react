@@ -23,7 +23,7 @@ export function EventWorlds() {
         <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
           <div>
             <SectionLabel index="02">What we do</SectionLabel>
-            <SplitReveal
+            <SplitReveal as="p"
               lines={["Eight worlds.", "One crew."]}
               className="display mt-6 text-[clamp(2.8rem,7vw,7rem)]"
               accentLine={1}

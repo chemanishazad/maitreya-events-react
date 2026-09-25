@@ -9,7 +9,7 @@ import { CTABand } from "@/components/sections/CTABand";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "About Maitreya Events",
+  title: "About Us — Event Management Company in Chennai",
   description:
     "Maitreya Events is a Chennai-based event management, entertainment and production company. One team for concept, planning, design, production and execution.",
   path: "/about",
@@ -40,6 +40,7 @@ export default function AboutPage() {
       <PageHero
         eyebrow="About us"
         lines={["We create.", "You celebrate."]}
+        seoHeading="About Maitreya Events — Event Management Company in Chennai"
         accentLine={1}
         intro="Maitreya Events is an event management, entertainment and production company based in Chennai, Tamil Nadu."
         image={img.stagePinkBlue}

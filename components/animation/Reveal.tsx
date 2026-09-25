@@ -63,9 +63,12 @@ export function SplitReveal({
     );
   };
 
+  // A real space between lines, so search engines and screen readers read "Proof, not promises."
+  // rather than "Proof, notpromises." (lines are display:block, so the space is invisible)
   const body = lines.map((line, i) => (
+    <Fragment key={i}>
+      {i > 0 && " "}
     <span
-      key={i}
       className={clsx("block", lineClassName, i === accentLine && "font-serif font-normal italic tracking-[-0.03em] text-marigold")}
     >
       {typeof line === "string"
@@ -77,6 +80,7 @@ export function SplitReveal({
           ))
         : renderWord(line)}
     </span>
+    </Fragment>
   ));
 
   if (immediate) {

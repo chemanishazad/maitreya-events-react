@@ -25,7 +25,7 @@ export function WhyStack() {
             <h2 id="why-heading" className="sr-only">
               Why Maitreya Events
             </h2>
-            <SplitReveal lines={["Why families", "and brands", "choose us."]} accentLine={2} className="display mt-6 text-[clamp(2.6rem,6.5vw,6.5rem)]" />
+            <SplitReveal as="p" lines={["Why families", "and brands", "choose us."]} accentLine={2} className="display mt-6 text-[clamp(2.6rem,6.5vw,6.5rem)]" />
           </div>
           <p className="max-w-md text-pretty text-bone/70 md:col-span-4 md:col-start-9">
             Five promises that shape every event we take on — from an intimate family function to a packed concert ground.
