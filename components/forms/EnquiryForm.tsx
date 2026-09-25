@@ -1,14 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { cloneElement, useId, useRef, useState } from "react";
+import { cloneElement, useEffect, useId, useRef, useState } from "react";
 import clsx from "clsx";
 import { budgetRanges, eventTypes, guestRanges, serviceOptions } from "@/data/content";
 import { enquiryToText, validateEnquiry, type Enquiry, type EnquiryErrors } from "@/lib/enquiry";
 import { sendEnquiryEmail } from "@/lib/emailjs";
-import { whatsappLink } from "@/data/site";
+import { site, telLink, whatsappLink } from "@/data/site";
 import { track } from "@/lib/analytics";
-import { ArrowIcon, Button, WhatsAppIcon } from "@/components/ui/Button";
+import { ArrowIcon, Button } from "@/components/ui/Button";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -43,6 +43,14 @@ export function EnquiryForm({
   const startedAt = useRef(0);
   const honeypot = useRef<HTMLInputElement>(null);
   const formId = useId();
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // The form collapses into a short thank-you — bring it into view
+  useEffect(() => {
+    if (status !== "success" || !wrapRef.current) return;
+    const top = wrapRef.current.getBoundingClientRect().top + window.scrollY - 140;
+    window.scrollTo({ top, behavior: "smooth" });
+  }, [status]);
 
   const set = <K extends keyof Enquiry>(key: K, value: Enquiry[K]) => {
     setData((d) => ({ ...d, [key]: value }));
@@ -68,18 +76,16 @@ export function EnquiryForm({
       return;
     }
 
-    // Open WhatsApp straight away (inside the click, so browsers don't block it) with every detail filled in
-    window.open(whatsappLink(enquiryToText(data, "whatsapp")), "_blank", "noopener");
-
     setStatus("submitting");
     setServerError("");
     try {
-      // Email copy via EmailJS. WhatsApp already carries the lead, so an email failure isn't shown as an error.
-      await sendEnquiryEmail(data).catch(() => false);
+      // Standard email enquiry via EmailJS (customer + team in Bcc). WhatsApp only opens from its own buttons.
+      await sendEnquiryEmail(data);
       track("generate_lead", { event_type: data.eventType, form: variant });
       setStatus("success");
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Something went wrong.");
+      if (process.env.NODE_ENV === "development") console.error("[enquiry]", err);
+      setServerError("Sorry — your enquiry couldn't be sent right now. Please try again, or reach us on WhatsApp or by phone.");
       setStatus("error");
     }
   }
@@ -89,7 +95,7 @@ export function EnquiryForm({
   const light = tone === "light";
 
   return (
-    <div className="relative">
+    <div ref={wrapRef} className="relative">
       <AnimatePresence mode="wait" initial={false}>
         {status === "success" ? (
           <motion.div
@@ -107,22 +113,22 @@ export function EnquiryForm({
             <div>
               <h3 className="display text-4xl sm:text-5xl">Thank you, {data.name.split(" ")[0]}.</h3>
               <p className={clsx("mt-3 max-w-md text-pretty", light ? "text-ink/70" : "text-bone/70")}>
-                Your enquiry has been sent to our team. If WhatsApp didn&apos;t open, tap below to send the same details
-                there — we&apos;ll call you back shortly.
+                Your enquiry has been sent. We&apos;ve emailed a copy to <b className="font-medium">{data.email}</b> — check your
+                spam folder if you don&apos;t see it in a few minutes. Our team will call you back shortly.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button href={whatsappLink(waText)} trackAs="whatsapp_click" icon={<WhatsAppIcon />}>
-                Send on WhatsApp
-              </Button>
               <Button
-                variant={light ? "dark" : "ghost"}
+                variant={light ? "dark" : "primary"}
                 onClick={() => {
                   setData({ ...empty, eventSlug });
                   setStatus("idle");
                 }}
               >
-                Send another
+                Send another enquiry
+              </Button>
+              <Button href="/" variant={light ? "dark" : "ghost"}>
+                Back to home
               </Button>
             </div>
           </motion.div>
@@ -170,18 +176,18 @@ export function EnquiryForm({
               />
             </Field>
 
-            {variant === "full" && (
-              <Field id={`${formId}-email`} label="Email" optional error={errors.email} light={light}>
-                <input
-                  id={`${formId}-email`}
-                  type="email"
-                  autoComplete="email"
-                  value={data.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  className={inputCls(light, !!errors.email)}
-                />
-              </Field>
-            )}
+            <Field id={`${formId}-email`} label="Email" error={errors.email} light={light}>
+              <input
+                id={`${formId}-email`}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={data.email}
+                onChange={(e) => set("email", e.target.value)}
+                className={inputCls(light, !!errors.email)}
+              />
+            </Field>
 
             <Field id={`${formId}-eventType`} label="Event type" error={errors.eventType} light={light}>
               <select
@@ -294,7 +300,15 @@ export function EnquiryForm({
                   exit={{ opacity: 0, height: 0 }}
                   className="rounded-xl bg-ember/15 px-4 py-3 text-sm text-ember sm:col-span-2"
                 >
-                  {serverError}
+                  {serverError}{" "}
+                  <a href={whatsappLink(waText)} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">
+                    WhatsApp us
+                  </a>{" "}
+                  or{" "}
+                  <a href={telLink} className="font-medium underline underline-offset-4">
+                    call {site.phoneDisplay}
+                  </a>
+                  .
                 </motion.p>
               )}
             </AnimatePresence>

@@ -23,7 +23,8 @@ export function validateEnquiry(e: Partial<Enquiry>): EnquiryErrors {
   if (!e.name || e.name.trim().length < 2) errors.name = "Please tell us your name.";
   const phone = (e.phone ?? "").replace(/[\s()-]/g, "");
   if (!PHONE.test(phone)) errors.phone = "Enter a valid 10-digit Indian mobile number.";
-  if (e.email && !EMAIL.test(e.email.trim())) errors.email = "That email doesn't look right.";
+  if (!e.email || !e.email.trim()) errors.email = "Please add your email — we'll send you a copy of your enquiry.";
+  else if (!EMAIL.test(e.email.trim())) errors.email = "That email doesn't look right.";
   if (!e.eventType) errors.eventType = "Choose the type of event.";
   if (e.date && Number.isNaN(Date.parse(e.date))) errors.date = "Choose a valid date.";
   if (e.message && e.message.length > 2000) errors.message = "Please keep the message under 2,000 characters.";

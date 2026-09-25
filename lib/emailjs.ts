@@ -18,9 +18,9 @@ export const emailjsReady = () => Boolean(emailjsConfig.serviceId && emailjsConf
  */
 function templateParams(e: Enquiry) {
   const dash = (v?: string) => (v && v.trim() ? v.trim() : "—");
-  const digits = e.phone.replace(/D/g, "");
+  const digits = e.phone.replace(/\D/g, "");
   const intl = digits.length === 10 ? `91${digits}` : digits.replace(/^0+/, "");
-  const firstName = e.name.trim().split(/s+/)[0];
+  const firstName = e.name.trim().split(/\s+/)[0];
   const waText = `Hi ${firstName}, this is Maitreya Events — thank you for your ${e.eventType.toLowerCase()} enquiry!`;
   const date = e.date
     ? new Date(`${e.date}T00:00:00+05:30`).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })
@@ -65,7 +65,7 @@ function templateParams(e: Enquiry) {
 export type EmailTemplateParams = ReturnType<typeof templateParams>;
 
 export async function sendEnquiryEmail(e: Enquiry) {
-  if (!emailjsReady()) return false;
+  if (!emailjsReady()) throw new Error("Email isn't set up yet (EmailJS keys missing).");
   const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
