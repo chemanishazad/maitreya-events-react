@@ -12,7 +12,6 @@ ENV_UPLOAD="${3:-}"
 
 BASE="${MAITREYA_ROOT:-/opt/maitreya}"
 APP="maitreya-events"
-PORT=3100
 KEEP_RELEASES=5
 RELEASE="$BASE/releases/$(date +%Y%m%d%H%M%S)-${SHA:0:7}"
 
@@ -35,6 +34,10 @@ if [ -n "$ENV_UPLOAD" ] && grep -q '[^[:space:]]' "$ENV_UPLOAD" 2>/dev/null; the
 fi
 rm -f "$ENV_UPLOAD"
 [ -f "$BASE/shared/.env" ] || install -m 600 /dev/null "$BASE/shared/.env"
+
+# App port: PORT=… in the env file, default 3100 (must match nginx proxy_pass)
+PORT="$(grep -E '^[[:space:]]*PORT[[:space:]]*=' "$BASE/shared/.env" | tail -n1 | sed -E 's/.*=[[:space:]]*"?([0-9]+)"?.*/\1/' || true)"
+PORT="${PORT:-3100}"
 
 log "Unpacking ${SHA:0:7} → $RELEASE"
 mkdir -p "$RELEASE"

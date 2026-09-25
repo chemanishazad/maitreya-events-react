@@ -11,6 +11,7 @@ import { WhatsAppFab } from "@/components/layout/WhatsAppFab";
 import { RouteTransitionProvider } from "@/components/layout/RouteTransition";
 import { JsonLd, organizationSchema, websiteSchema } from "@/lib/seo";
 import { isIndexable } from "@/lib/env";
+import { config } from "@/lib/config";
 
 const sans = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin"], display: "swap" });
 // High-contrast Didone for display type (caps, with italic accents)
@@ -62,7 +63,7 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GA_ID = config.gaId;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

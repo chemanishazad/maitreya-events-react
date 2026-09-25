@@ -1,6 +1,6 @@
 /**
  * PM2 app for Maitreya Events — copied to /opt/maitreya/ecosystem.config.cjs on every deploy.
- * Runs on 127.0.0.1:3100 (point the existing nginx site for maitreyaevents.com here).
+ * Runs on 127.0.0.1:$PORT — PORT from the server env file, default 3100 (nginx proxies here).
  * Independent of any other PM2 apps on the server.
  */
 const fs = require("fs");
@@ -8,6 +8,13 @@ const path = require("path");
 
 const BASE = process.env.MAITREYA_ROOT || "/opt/maitreya";
 const current = path.join(BASE, "current");
+
+// PORT comes from the server's env file (synced from the ENV_FILE secret); default 3100
+let port = "3100";
+try {
+  const m = fs.readFileSync(path.join(BASE, "shared", ".env"), "utf8").match(/^\s*PORT\s*=\s*"?(\d+)"?/m);
+  if (m) port = m[1];
+} catch {}
 
 let release = "unknown";
 try {
@@ -29,7 +36,7 @@ module.exports = {
         NODE_ENV: "production",
         SITE_ENV: "production",
         RELEASE_SHA: release,
-        PORT: "3100",
+        PORT: port,
         HOSTNAME: "127.0.0.1",
       },
       max_memory_restart: "700M",

@@ -1,3 +1,5 @@
-/** "development" on dev.maitreyaevents.com, "production" on the live site. Set at build time by CI. */
-export const siteEnv = process.env.SITE_ENV ?? "local";
+import { config } from "@/lib/config";
+
+/** "development" locally (never indexed), "production" on the live site. */
+export const siteEnv = config.siteEnv;
 export const isIndexable = siteEnv !== "development";
