@@ -1,6 +1,7 @@
 name: Deploy
 
-# Push to master → build → upload to the server → PM2 reload (auto-rollback if unhealthy)
+# Push to master → read the server's env file → build → upload → PM2 reload (auto-rollback if unhealthy)
+# The env file lives ONLY on the server: /opt/maitreya/shared/.env (edit it there, then redeploy).
 on:
   push:
     branches: [master]
@@ -11,6 +12,9 @@ concurrency: deploy
 jobs:
   deploy:
     runs-on: ubuntu-24.04-arm # same CPU as the Oracle server
+    env:
+      HOST: ${{ secrets.HOST }}
+      USER: ${{ secrets.USER }}
     steps:
       - uses: actions/checkout@v7
 
@@ -19,26 +23,33 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Build
+      - name: Connect to server
         env:
-          ENV_FILE: ${{ secrets.ENV_FILE }}
+          KEY: ${{ secrets.KEY }}
         run: |
-          printf '%s\n' "$ENV_FILE" > .env.production
+          mkdir -p ~/.ssh && printf '%s\n' "$KEY" > ~/.ssh/key && chmod 600 ~/.ssh/key
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Read env from server
+        # NEXT_PUBLIC_* values are baked into the build, so the build needs the server's env file
+        run: |
+          ssh -i ~/.ssh/key "$USER@$HOST" "cat /opt/maitreya/shared/.env 2>/dev/null || true" > .env.production
+          echo "Loaded $(grep -cE '^[A-Z_]+=' .env.production || true) settings from the server"
+          grep -q '^NEXT_PUBLIC_SITE_URL=' .env.production || echo "::warning::Server env file is empty or missing — building with defaults"
+
+      - name: Build
+        run: |
           npm ci
           npm run lint
           npm run build
           bash deploy/package.sh "$GITHUB_SHA" release.tgz
+          rm -f .env.production
 
       - name: Deploy
-        env:
-          KEY: ${{ secrets.KEY }}
-          HOST: ${{ secrets.HOST }}
-          USER: ${{ secrets.USER }}
-          ENV_FILE: ${{ secrets.ENV_FILE }}
         run: |
-          mkdir -p ~/.ssh && printf '%s\n' "$KEY" > ~/.ssh/key && chmod 600 ~/.ssh/key
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          printf '%s\n' "$ENV_FILE" > server.env
-          scp -i ~/.ssh/key release.tgz server.env deploy/remote-deploy.sh "$USER@$HOST:/tmp/"
-          ssh -i ~/.ssh/key "$USER@$HOST" "bash -lc 'bash /tmp/remote-deploy.sh $GITHUB_SHA /tmp/release.tgz /tmp/server.env'"
-          rm -f ~/.ssh/key server.env
+          scp -i ~/.ssh/key release.tgz deploy/remote-deploy.sh "$USER@$HOST:/tmp/"
+          ssh -i ~/.ssh/key "$USER@$HOST" "bash -lc 'bash /tmp/remote-deploy.sh $GITHUB_SHA /tmp/release.tgz'"
+
+      - name: Clean up
+        if: always()
+        run: rm -f ~/.ssh/key .env.production

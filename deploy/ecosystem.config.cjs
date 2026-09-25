@@ -9,7 +9,7 @@ const path = require("path");
 const BASE = process.env.MAITREYA_ROOT || "/opt/maitreya";
 const current = path.join(BASE, "current");
 
-// PORT comes from the server's env file (synced from the ENV_FILE secret); default 3100
+// PORT comes from the server env file (/opt/maitreya/shared/.env); default 3100
 let port = "3100";
 try {
   const m = fs.readFileSync(path.join(BASE, "shared", ".env"), "utf8").match(/^\s*PORT\s*=\s*"?(\d+)"?/m);
@@ -30,7 +30,7 @@ module.exports = {
       // 2 workers → reloads without downtime
       exec_mode: "cluster",
       instances: 2,
-      // Runtime env (synced from the ENV_FILE GitHub secret on each deploy)
+      // Runtime env — the file you edit on the server
       node_args: `--env-file=${path.join(BASE, "shared", ".env")}`,
       env: {
         NODE_ENV: "production",

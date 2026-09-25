@@ -27,7 +27,7 @@ if [ ! -d "$BASE/releases" ]; then
   mkdir -p "$BASE/releases" "$BASE/shared" "$BASE/logs"
 fi
 
-# Runtime env: replace with the uploaded ENV_FILE secret — an empty secret leaves the server copy untouched
+# Runtime env lives on the server (edit /opt/maitreya/shared/.env). An optional uploaded file replaces it.
 if [ -n "$ENV_UPLOAD" ] && grep -q '[^[:space:]]' "$ENV_UPLOAD" 2>/dev/null; then
   install -m 600 "$ENV_UPLOAD" "$BASE/shared/.env"
   log "Updated shared/.env"
