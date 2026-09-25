@@ -155,3 +155,14 @@
   animation: fade-up-in 0.9s var(--ease-expo) both;
   animation-delay: var(--d, 0s);
 }
+
+/* Hero fly-through ambience */
+@keyframes rays {
+  from { transform: translateX(-50%) rotate(-4deg); }
+  to { transform: translateX(-50%) rotate(4deg); }
+}
+@keyframes float {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(12px, -28px, 0); }
+  100% { transform: translate3d(0, -56px, 0); opacity: 0; }
+}

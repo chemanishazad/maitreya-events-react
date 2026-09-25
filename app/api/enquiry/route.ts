@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { enquiryToText, validateEnquiry, type Enquiry } from "@/lib/enquiry";
 
 /**
- * Enquiry endpoint.
- * Delivery: set RESEND_API_KEY + ENQUIRY_TO_EMAIL (and optionally ENQUIRY_FROM_EMAIL)
- * to email each lead via Resend. Without them, leads are logged server-side only.
+ * Enquiry endpoint — emails the lead to Gmail. Nothing is stored or logged on the server.
+ * Needs GMAIL_USER + GMAIL_APP_PASSWORD (a Google "app password"); ENQUIRY_TO_EMAIL is optional.
+ * The form also opens WhatsApp with the same details, so leads arrive even without email set up.
  */
 export async function POST(req: Request) {
   let body: Partial<Enquiry> & { website?: string; startedAt?: number };
@@ -16,9 +17,7 @@ export async function POST(req: Request) {
 
   // Spam protection: honeypot field + minimum fill time
   const tooFast = typeof body.startedAt === "number" && Date.now() - body.startedAt < 2500;
-  if (body.website || tooFast) {
-    return NextResponse.json({ ok: true });
-  }
+  if (body.website || tooFast) return NextResponse.json({ ok: true });
 
   const errors = validateEnquiry(body);
   if (Object.keys(errors).length) {
@@ -39,30 +38,23 @@ export async function POST(req: Request) {
     eventSlug: body.eventSlug?.slice(0, 120) || undefined,
   };
 
-  const key = process.env.RESEND_API_KEY;
-  const to = process.env.ENQUIRY_TO_EMAIL;
-
-  if (!key || !to) {
-    console.info("[enquiry] (no email provider configured)\n" + enquiryToText(enquiry));
-    return NextResponse.json({ ok: true });
-  }
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) return NextResponse.json({ ok: true, emailed: false });
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: process.env.ENQUIRY_FROM_EMAIL ?? "Maitreya Website <onboarding@resend.dev>",
-        to: [to],
-        reply_to: enquiry.email,
+    await nodemailer
+      .createTransport({ service: "gmail", auth: { user, pass } })
+      .sendMail({
+        from: `"Maitreya Website" <${user}>`,
+        to: process.env.ENQUIRY_TO_EMAIL || user,
+        replyTo: enquiry.email,
         subject: `New enquiry: ${enquiry.eventType} — ${enquiry.name}`,
         text: enquiryToText(enquiry),
-      }),
-    });
-    if (!res.ok) throw new Error(`Resend responded ${res.status}`);
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("[enquiry] delivery failed", err);
-    return NextResponse.json({ ok: false, error: "We couldn't send your enquiry. Please try WhatsApp or call us." }, { status: 502 });
+      });
+    return NextResponse.json({ ok: true, emailed: true });
+  } catch {
+    // WhatsApp already carried the details, so don't show the visitor an error
+    return NextResponse.json({ ok: true, emailed: false });
   }
 }

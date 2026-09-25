@@ -30,9 +30,12 @@ export function validateEnquiry(e: Partial<Enquiry>): EnquiryErrors {
   return errors;
 }
 
-export function enquiryToText(e: Enquiry) {
+/** Enquiry as plain text — `whatsapp` reads as a message from the customer, `email` as a lead summary. */
+export function enquiryToText(e: Enquiry, mode: "email" | "whatsapp" = "email") {
   return [
-    `New enquiry — ${e.eventType}`,
+    mode === "whatsapp" ? `Hi Maitreya Events! I'd like to plan an event.
+
+Event: ${e.eventType}` : `New enquiry — ${e.eventType}`,
     `Name: ${e.name}`,
     `Phone: ${e.phone}`,
     e.email && `Email: ${e.email}`,

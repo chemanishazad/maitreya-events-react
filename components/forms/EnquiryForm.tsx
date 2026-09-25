@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cloneElement, useId, useRef, useState } from "react";
 import clsx from "clsx";
 import { budgetRanges, eventTypes, guestRanges, serviceOptions } from "@/data/content";
-import { validateEnquiry, type Enquiry, type EnquiryErrors } from "@/lib/enquiry";
+import { enquiryToText, validateEnquiry, type Enquiry, type EnquiryErrors } from "@/lib/enquiry";
 import { whatsappLink } from "@/data/site";
 import { track } from "@/lib/analytics";
 import { ArrowIcon, Button, WhatsAppIcon } from "@/components/ui/Button";
@@ -60,6 +60,9 @@ export function EnquiryForm({
       document.getElementById(`${formId}-${first}`)?.focus();
       return;
     }
+    // Open WhatsApp straight away (inside the click, so browsers don't block it) with every detail filled in
+    window.open(whatsappLink(enquiryToText(data, "whatsapp")), "_blank", "noopener");
+
     setStatus("submitting");
     setServerError("");
     try {
@@ -81,9 +84,7 @@ export function EnquiryForm({
     }
   }
 
-  const waText = `Hi Maitreya Events, I'm ${data.name || "planning an event"}. ${
-    data.eventType ? `Event: ${data.eventType}. ` : ""
-  }${data.date ? `Date: ${data.date}. ` : ""}${data.location ? `Location: ${data.location}.` : ""}`;
+  const waText = data.name ? enquiryToText(data, "whatsapp") : "Hi Maitreya Events, I'd like to plan an event.";
 
   const light = tone === "light";
 
@@ -106,13 +107,13 @@ export function EnquiryForm({
             <div>
               <h3 className="display text-4xl sm:text-5xl">Thank you, {data.name.split(" ")[0]}.</h3>
               <p className={clsx("mt-3 max-w-md text-pretty", light ? "text-ink/70" : "text-bone/70")}>
-                Your enquiry is with our team. We&apos;ll call you back shortly — or continue the conversation on WhatsApp
-                right now.
+                Your enquiry has been sent to our team. If WhatsApp didn&apos;t open, tap below to send the same details
+                there — we&apos;ll call you back shortly.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Button href={whatsappLink(waText)} trackAs="whatsapp_click" icon={<WhatsAppIcon />}>
-                Continue on WhatsApp
+                Send on WhatsApp
               </Button>
               <Button
                 variant={light ? "dark" : "ghost"}
